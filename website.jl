@@ -149,7 +149,7 @@ begin
 		end
 		p₀ = ComponentVector(NamedTuple(ps_conv))
 		# p₀ = ComponentVector(nums, ax)
-		heprob = HyperelasticProblem(he_data, ψ, p₀)
+		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
 		sol = solve(heprob, LBFGS())
 		NamedTuple(sol.u)
 	end
@@ -191,7 +191,7 @@ Small Strain Shear Modulus: $(ShearModulus(ψ, sol.u))
 
 Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol.u))
 
-Model Citation: $(DownloadButton(citation(getfield(Hyperelastics, model)()), "ref.bib"))
+# Model Citation: $(DownloadButton(citation(getfield(Hyperelastics, model)()), "ref.bib"))
 
 Optimizer Output:
 $(display(sol.original))
