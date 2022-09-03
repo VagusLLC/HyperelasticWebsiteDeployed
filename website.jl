@@ -22,8 +22,8 @@ begin
 	import Pkg
 	d = Pkg.develop
 	d("InverseLangevinApproximations")
-	d("Hyperelastics")
 	using InverseLangevinApproximations
+	d("Hyperelastics")
 	using Hyperelastics
 	using Bibliography
 	using ForwardDiff
