@@ -64,6 +64,6 @@ sudo certbot --nginx -d carsonfarmer.me -d www.carsonfarmer.me
 crontab -e
 0 5 * * * /usr/bin/certbot renew --quiet
 
-# sudo systemctl daemon-reload
-# sudo systemctl start pluto-server
-# sudo systemctl enable pluto-server 
+sudo systemctl daemon-reload
+sudo systemctl start pluto-server
+sudo systemctl enable pluto-server 
