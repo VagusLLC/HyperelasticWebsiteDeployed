@@ -47,12 +47,23 @@ cat > $TEMPFILE << __EOF__
 cd /root/HyperelasticWebsiteDeployed  # Make sure to change to the absolute path to your repository. Don't use ~.
 julia --project="pluto-slider-server-environment" -e "import Pkg; Pkg.instantiate(); import PlutoSliderServer; PlutoSliderServer.run_git_directory(\".\")"
 __EOF__
-
 sudo mv $TEMPFILE /usr/local/bin/pluto-slider-server.sh
-
 sudo chmod 744 /usr/local/bin/pluto-slider-server.sh
 sudo chmod 664 /etc/systemd/system/pluto-server.service
+# Install nginx
+sudo apt install nginx -y
 
-sudo systemctl daemon-reload
-sudo systemctl start pluto-server
-sudo systemctl enable pluto-server
+# Steps from https://phoenixnap.com/kb/letsencrypt-nginx
+sudo apt install certbot python3-certbot-nginx -y
+##### Changes to nginx configuration file
+# Adjust firewall settings
+sudo ufw status
+sudo ufw allow 'Nginx HTTPS'
+sudo certbot --nginx -d carsonfarmer.me -d www.carsonfarmer.me
+# Enable Cerificate Renewal
+crontab -e
+0 5 * * * /usr/bin/certbot renew --quiet
+
+# sudo systemctl daemon-reload
+# sudo systemctl start pluto-server
+# sudo systemctl enable pluto-server 

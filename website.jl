@@ -745,8 +745,8 @@ uuid = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
 version = "0.1.8"
 
 [[deps.Hyperelastics]]
-deps = ["AbstractDifferentiation", "ComponentArrays", "DataInterpolations", "ForwardDiff", "Integrals", "InverseLangevinApproximations", "LinearAlgebra", "LossFunctions", "NonlinearSolve", "Optimization", "Publish", "QuadGK", "Reexport", "SpecialFunctions", "SymbolicUtils", "Tullio"]
-path = "/home/carson/.julia/dev/Hyperelastics"
+deps = ["AbstractDifferentiation", "BibParser", "Bibliography", "ComponentArrays", "DataInterpolations", "ForwardDiff", "Integrals", "InverseLangevinApproximations", "LinearAlgebra", "LossFunctions", "NonlinearSolve", "Optimization", "Publish", "QuadGK", "Reexport", "Requires", "SpecialFunctions", "SymbolicUtils", "Tullio"]
+path = "/root/.julia/dev/Hyperelastics"
 uuid = "c20c605d-adbe-46e4-9db6-e2b04c3ba023"
 version = "0.1.0"
 
@@ -829,7 +829,7 @@ uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.7"
 
 [[deps.InverseLangevinApproximations]]
-path = "/home/carson/.julia/dev/InverseLangevinApproximations"
+path = "/root/.julia/dev/InverseLangevinApproximations"
 uuid = "b82787f2-62be-403e-9078-6d9feafd7ee3"
 version = "0.1.0"
 
@@ -1718,7 +1718,7 @@ version = "17.4.0+0"
 # ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
 # ╟─4c151e9a-54a1-4f48-922d-b2607d7416a3
-# ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
+# ╠═e5a18d4c-14cd-11ed-36d5-69de0fd02830
 # ╟─e0e7407d-fe60-4583-8060-3ba38c22c409
 # ╟─4d6f03c0-203a-4536-8ca2-c3dd77182ce6
 # ╟─86f7e74f-c0a9-4561-85b9-f3ed6559facc
