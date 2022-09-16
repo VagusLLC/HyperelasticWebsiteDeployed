@@ -1,6 +1,6 @@
 [Export]
 offer_binder = false
-slider_server_url = "67.205.132.47"
+slider_server_url = "67.205.132.47:2345"
 
 [SliderServer]
 port = 2345
