@@ -15,8 +15,8 @@ tar -xvf julia-1.8.0-linux-x86_64.tar.gz
 sudo ln -s ~/julia-1.8.0/bin/julia /usr/local/bin/julia
 rm julia-1.8.0-linux-x86_64.tar.gz
 julia -e ''
-mkdir .julia/dev
-cd .julia/dev
+mkdir `pwd`/.julia/dev
+cd `pwd`/.julia/dev
 gh repo clone TRACER-LULab/Hyperelastics.jl Hyperelastics
 gh repo clone TRACER-LULab/InverseLangevinApproximations.jl InverseLangevinApproximations
 cd
@@ -57,11 +57,11 @@ sudo apt install nginx -y
 sudo apt install certbot python3-certbot-nginx -y
 ##### Changes to nginx configuration file
 # Adjust firewall settings
-sudo ufw status
-sudo ufw allow 'Nginx HTTPS'
-sudo certbot --nginx -d carsonfarmer.me -d www.carsonfarmer.me
-# Enable Cerificate Renewal
-crontab -e
+# sudo ufw status
+# sudo ufw allow 'Nginx HTTPS'
+# sudo certbot --nginx -d carsonfarmer.me -d www.carsonfarmer.me
+# # Enable Cerificate Renewal
+# crontab -e
 0 5 * * * /usr/bin/certbot renew --quiet
 
 sudo systemctl daemon-reload
