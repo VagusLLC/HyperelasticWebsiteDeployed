@@ -755,12 +755,6 @@ git-tree-sha1 = "b7b88a4716ac33fe31d6556c02fc60017594343c"
 uuid = "3e5b6fbb-0976-4d2c-9146-d79de83f2fb0"
 version = "0.1.8"
 
-[[deps.Hyperelastics]]
-deps = ["AbstractDifferentiation", "BibParser", "Bibliography", "ComponentArrays", "DataInterpolations", "ForwardDiff", "Integrals", "InverseLangevinApproximations", "LinearAlgebra", "LossFunctions", "NonlinearSolve", "Optimization", "Publish", "QuadGK", "Reexport", "Requires", "SpecialFunctions", "SymbolicUtils", "Tullio"]
-path = "/home/carson/.julia/dev/Hyperelastics"
-uuid = "c20c605d-adbe-46e4-9db6-e2b04c3ba023"
-version = "0.1.0"
-
 [[deps.HypergeometricFunctions]]
 deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions", "Test"]
 git-tree-sha1 = "709d864e3ed6e3545230601f94e11ebc65994641"
@@ -838,11 +832,6 @@ deps = ["Test"]
 git-tree-sha1 = "b3364212fb5d870f724876ffcd34dd8ec6d98918"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
 version = "0.1.7"
-
-[[deps.InverseLangevinApproximations]]
-path = "/home/carson/.julia/dev/InverseLangevinApproximations"
-uuid = "b82787f2-62be-403e-9078-6d9feafd7ee3"
-version = "0.1.0"
 
 [[deps.InvertedIndices]]
 git-tree-sha1 = "bee5f1ef5bf65df56bdd2e40447590b272a5471f"
