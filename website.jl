@@ -17,6 +17,7 @@ end
 # ╔═╡ e5a18d4c-14cd-11ed-36d5-69de0fd02830
 # ╠═╡ show_logs = false
 begin
+	local_dir = joinpath(splitpath(@__FILE__)[1:end-1])
 	import Pkg
 	Pkg.activate(mktempdir())
 	Pkg.add([
@@ -30,14 +31,18 @@ begin
 		Pkg.PackageSpec(name="DataFrames"),
 		Pkg.PackageSpec(name="Optimization"), 
 		Pkg.PackageSpec(name="OptimizationOptimJL"),
-		Pkg.PackageSpec(name="Unitful")
+		Pkg.PackageSpec(name="Unitful"),
 	])
-	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful
-	d = Pkg.develop
-	d("InverseLangevinApproximations")
-	using InverseLangevinApproximations
-	d("Hyperelastics")
-	using Hyperelastics
+	Pkg.develop([
+		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
+		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
+	])
+	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations
+	# d = Pkg.develop
+	# d("InverseLangevinApproximations")
+	# using InverseLangevinApproximations
+	# d("Hyperelastics")
+	# using Hyperelastics
 end
 
 # ╔═╡ 2a464508-4069-448b-a638-7253310ab16b
