@@ -1,0 +1,6 @@
+[submodule "InverseLangevinApproximations"]
+	path = InverseLangevinApproximations
+	url = git@github.com:TRACER-LULab/InverseLangevinApproximations.jl.git
+[submodule "Hyperelastics"]
+	path = Hyperelastics
+	url = git@github.com:TRACER-LULab/Hyperelastics.jl.git
