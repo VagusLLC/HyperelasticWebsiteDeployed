@@ -44,6 +44,7 @@ jobs:
 
             - name: Run & export Pluto notebooks
               run: |
+                git submodule update --init --recursive
                 julia -e 'using Pkg
                   Pkg.activate(mktempdir())
                   Pkg.add([
