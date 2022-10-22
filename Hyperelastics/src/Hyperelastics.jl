@@ -1,31 +1,38 @@
 module Hyperelastics
 
+using Reexport
 using InverseLangevinApproximations
-using LossFunctions
-using Optimization
+@reexport using  ContinuumModels
+using LossFunctions, Optimization
 using AbstractDifferentiation, ForwardDiff
 using Tullio
 using SpecialFunctions
-using ComponentArrays
-using SymbolicUtils
-using Bibliography
+using DataInterpolations
+using QuadGK
+using ComponentArrays, LabelledArrays
+using LinearAlgebra
 
-export AbstractHyperelasticData, UniaxialHyperelasticData, BiaxialHyperelasticData, HyperelasticProblem
-export I₁, I₂, I₃, J
-export StrainEnergyDensityFunction, NominalStressFunction, TrueStressFunction, citation, parameters, parameter_bounds
+export UniaxialHyperelasticData, BiaxialHyperelasticData, HyperelasticProblem
+export citation, parameters, parameter_bounds
 
 abstract type AbstractHyperelasticData end
-abstract type AbstractHyperelasticModel end
+abstract type AbstractHyperelasticModel <: ContinuumModels.AbstractMaterialModel end
+abstract type AbstractDataDrivenHyperelasticModel <: AbstractHyperelasticModel end
+abstract type AbstractHyperelasticProblem end
 
 struct InvariantForm end
+
 include("data_types.jl")
 include("invariants.jl")
 include("model_functions.jl")
 include("datasets.jl")
 include("isotropic_incompressible_models.jl")
+include("isotropic_compressible_models.jl")
 include("data_driven.jl")
 include("macro_micro_macro_model.jl")
 include("average_chain_behavior.jl")
 include("optimization_interface.jl")
+
+# include("precompile.jl")
 
 end
