@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.11
+# v0.19.14
 
 using Markdown
 using InteractiveUtils
@@ -23,6 +23,8 @@ begin
 	Pkg.add([
 		Pkg.PackageSpec(name="PlotlyLight"),
 		Pkg.PackageSpec(name="PlutoUI"),
+		Pkg.PackageSpec(name="CairoMakie"),
+		Pkg.PackageSpec(name="MakiePublication"),
 		Pkg.PackageSpec(name="Bibliography"),
 		Pkg.PackageSpec(name="ForwardDiff"),
 		Pkg.PackageSpec(name="CSV"),
@@ -32,41 +34,46 @@ begin
 		Pkg.PackageSpec(name="Optimization"), 
 		Pkg.PackageSpec(name="OptimizationOptimJL"),
 		Pkg.PackageSpec(name="Unitful"),
+		Pkg.PackageSpec(name="LabelledArrays")
 	])
 	Pkg.develop([
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
+		Pkg.PackageSpec(path=joinpath(local_dir, "ContinuumModels")),
+		Pkg.PackageSpec(name="PlutoUI"),
 	])
-	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations
-	# d = Pkg.develop
-	# d("InverseLangevinApproximations")
-	# using InverseLangevinApproximations
-	# d("Hyperelastics")
-	# using Hyperelastics
+	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations, ContinuumModels, LabelledArrays, CairoMakie, MakiePublication
 end
 
 # ╔═╡ 2a464508-4069-448b-a638-7253310ab16b
 md"""
 # Vagus, LLC - Hyperelastic Model Fitting Toolbox
-"""
-
-# ╔═╡ d354fac5-a772-480d-984f-dd5db4b39b5c
-md"""
-# Upload Dataset
+## Upload Uniaxial Test Data
 """
 
 # ╔═╡ 6434a755-90be-45f8-8e1e-cdeba4be244b
 @bind data FilePicker()
 
+# ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
+md"""
+## Verification Plot
+"""
+
 # ╔═╡ 4c674e97-7773-42e4-a4e9-513ddd8356be
-if !isnothing(data)
-	df = CSV.read(data["data"], DataFrame)
-	he_data = UniaxialHyperelasticData(df.stress.*1e6, df.stretch)
-	p = Plot(Config(x = df.stretch, y = df.stress))
-	p.layout.xaxis.title = "Stretch"
-	p.layout.yaxis.title = "Stress [MPa]"
-	p
-end
+# if !isnothing(data)
+# 	p = Plot(
+# 		Config(
+# 			x = df[!, stretch_column], 
+# 			y = df[!, stress_column],
+# 			type = "scatter",
+# 			mode="markers",
+# 			name="Experimental"
+# 		)
+# 	)
+# 	p.layout.xaxis.title = "Stretch"
+# 	p.layout.yaxis.title = "Stress [$stress_units]"
+# 	p
+# end
 
 # ╔═╡ 7b095cb8-ab68-414f-966d-a964c5f2a256
 md"""
@@ -80,45 +87,12 @@ When selecting a phenomenological model, be aware that using higher order models
 
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
 begin
-required = [
-    :NominalStressFunction,
-    :TrueStressFunction,
-    :parameters,
-    :StrainEnergyDensityFunction,
-    :AbstractHyperelasticData,
-    :BiaxialHyperelasticData,
-    :UniaxialHyperelasticData,
-    :HyperelasticProblem,
-    :Hyperelastics,
-    :I₁,
-    :I₂,
-    :I₃,
-    :J,
-    :Kawabata1981
-]
-
-data_driven = [
-    :MacroMicroMacro,
-    :SussmanBathe,
-    :DataDrivenAverageChainBehavior,
-    :SussmanBathe,
-    :StabilitySmoothedSussmanBathe,
-    :LatoreeMontans
-]
-
-hyperelastic_models = filter(x -> !(x in required) && !(x in data_driven), names(Hyperelastics))
+hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: DataType,names(Hyperelastics))
+hyperelastic_models = filter(x -> !(getfield(Hyperelastics, x) <: Hyperelastics.AbstractDataDrivenHyperelasticModel) && (getfield(Hyperelastics, x) <: Hyperelastics.AbstractHyperelasticModel), hyperelastic_models)
 end;
 
 # ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
 @bind model Select(hyperelastic_models)
-
-# ╔═╡ f42eeff0-941f-4091-8e09-57ed8cc1261e
-begin
-model
-	md"""
-## Fit the Model $(@bind fit CheckBox())
-"""
-end
 
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
 function set_parameters(model)
@@ -137,83 +111,145 @@ end;
 # ╔═╡ fa546bd7-aaca-4dfb-ac03-72aa515c5343
 @bind ps confirm(set_parameters(model))
 
-# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
-# ╠═╡ show_logs = false
-begin
-	if fit
-		ψ = getfield(Hyperelastics, Symbol(model))()
-		ps_dict = Dict(pairs(ps))
-		ps_conv = Dict{Symbol, Union{Float64, Vector{Float64}}}()
-		for p in keys(ps_dict)
-			if occursin("⃗", string(p))
-				ps_conv[p] = parse.(Float64, split(ps[p], ","))
-			else
-				ps_conv[p] = parse.(Float64, ps[p])
-			end
-		end
-		p₀ = ComponentVector(NamedTuple(ps_conv))
-		# p₀ = ComponentVector(nums, ax)
-		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
-		sol = solve(heprob, LBFGS())
-		NamedTuple(sol.u)
-	end
-end
-
-# ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
-begin
-	if fit
-	s⃗ = map(λ -> NominalStressFunction(ψ, λ, sol.u), collect.(he_data.λ⃗))
-	s₁ = getindex.(s⃗, 1)
-	s₃ = getindex.(s⃗, 3)
-	λ₁ = getindex.(he_data.λ⃗, 1)
-	λ₃ = getindex.(he_data.λ⃗, 3)
-	Δs₁₃ = s₁.-s₃.*λ₃./λ₁
-	p_fit = Plot(
-		[
-			Config(x = getindex.(he_data.λ⃗, 1), y = getindex.(he_data.s⃗, 1), name="Experimental"),
-			Config(x = getindex.(he_data.λ⃗, 1), y = Δs₁₃, name = split(split(string(ψ), ".")[2], "(")[1])
-		]
-	)
-	p_fit.layout.xaxis.title = "Stretch"
-	p_fit.layout.yaxis.title = "Stress [Pa]"
-	p_fit
-	end
-end
-
 # ╔═╡ 86f7e74f-c0a9-4561-85b9-f3ed6559facc
 function ShearModulus(ψ, ps)
-	s(x) = ForwardDiff.gradient(x->StrainEnergyDensityFunction(ψ, x, ps), x)[1]-ForwardDiff.gradient(x->StrainEnergyDensityFunction(ψ, x, ps), x)[3]*x[3]/x[1]
+	s(x) = ForwardDiff.gradient(x->StrainEnergyDensity(ψ, x, ps), x)[1]-ForwardDiff.gradient(x->StrainEnergyDensity(ψ, x, ps), x)[3]*x[3]
 	ForwardDiff.gradient(y->s(y)[1], [1.0, 1.0, 1.0])[1]
-	# ForwardDiff.gradient(y->ForwardDiff.gradient(x->StrainEnergyDensityFunction(ψ, x, ps), y)[1], [1.0, 1.0, 1.0])[1]
 end;
 
 # ╔═╡ 8ea07dab-06dc-456d-9769-5e9c3980a777
 ElasticModulus(ψ, ps) = ShearModulus(ψ, ps)*3;
 
-# ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
-if fit
+# ╔═╡ 7998136a-de3d-42f9-9028-1172415c8b75
+if !isnothing(data)
+	df = CSV.read(data["data"], DataFrame);
+end;
+
+# ╔═╡ 69068002-ca3a-4e19-9562-6736d3b15dea
+if !isnothing(data)
 md"""
-# Other Values
+Stress Column: $(@bind stress_column Select(names(df)))
 
-Small Strain Shear Modulus: $(ShearModulus(ψ, sol.u))
+Stretch Column: $(@bind stretch_column Select(names(df)))
 
-Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol.u))
-
-Optimizer Output:
-$(display(sol.original))
+Stress Units: $(@bind stress_units TextField())
 """
 end
 
+# ╔═╡ 2607b1b6-9c9c-482f-b38b-35e83a57f5d3
+if !isnothing(data)
+	scatter(
+		df[!, stretch_column], 
+		df[!, stress_column],
+		name="Experimental",
+		axis = (xlabel = "Stretch", ylabel = "Stress [$stress_units]")
+	)
+end
+
+# ╔═╡ 12256359-1dca-4a71-a225-66994e2dfd66
+if !isnothing(data)
+	he_data = UniaxialHyperelasticData(df[!, stress_column], df[!, stretch_column]);
+end;
+
+# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
+begin
+	if !isnothing(data)
+	parsed, p₀ = try
+		true, LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
+	catch
+		false, nothing
+	end
+	if parsed
+		ψ = getfield(Hyperelastics, Symbol(model))()
+		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
+		solution = solve(heprob, LBFGS())
+		sol = NamedTuple(solution.u)
+		sol
+	end
+	end
+end
+
+# ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
+if !isnothing(data)
+if parsed && !isnothing(data)
+md"""
+# Other Values
+
+Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
+
+Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
+
+"""
+end
+end
+
+# ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
+let
+	if !isnothing(data)
+	if parsed
+	ψ = getfield(Hyperelastics, Symbol(model))()
+	s⃗ = map(λ -> SecondPiolaKirchoffStressTensor(ψ, λ, sol), collect.(he_data.λ⃗))
+	s₁ = getindex.(s⃗, 1)
+	s₃ = getindex.(s⃗, 3)
+	λ₁ = getindex.(he_data.λ⃗, 1)
+	λ₃ = getindex.(he_data.λ⃗, 3)
+	Δs₁₃ = s₁.-s₃.*λ₃./λ₁
+	# p_fit = Plot(
+	# 	[
+	# 		Config(
+	# 			x = getindex.(he_data.λ⃗, 1), 
+	# 			y = getindex.(he_data.s⃗, 1),
+	# 			mode="markers",
+	# 			type = "scatter",
+	# 			name="Experimental"
+	# 		),
+	# 		Config(
+	# 			x = getindex.(he_data.λ⃗, 1), 
+	# 			y = Δs₁₃, 
+	# 			name = split(split(string(ψ), ".")[2], "(")[1]
+	# 		)
+	# 	]
+	# )
+	# p_fit.layout.xaxis.title = "Stretch"
+	# p_fit.layout.yaxis.title = "Stress [$stress_units]"
+	# p_fit
+	f = Figure()
+	ax = CairoMakie.Axis(f,xlabel = "Stretch", ylabel = "Stress [$stress_units]")
+	s1 = scatter!(
+		ax,
+		getindex.(he_data.λ⃗, 1), 
+		getindex.(he_data.s⃗, 1),
+		label = "Experimental"
+	)
+	l1 = lines!(
+		ax,
+		getindex.(he_data.λ⃗, 1), 
+		Δs₁₃, 
+		color = MakiePublication.seaborn_muted()[2],
+		label = split(split(string(ψ), ".")[2], "(")[1]
+	)
+	axislegend(ax, [[l1], [s1]], [split(split(string(ψ), ".")[2], "(")[1]
+ , "Experimental"], position = :lt, nbanks = 2)
+	f[1,1] = ax
+	f
+	end
+	end
+end
+
+# ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
+set_theme!(MakiePublication.theme_web(width = 800))
+
 # ╔═╡ Cell order:
 # ╟─2a464508-4069-448b-a638-7253310ab16b
-# ╟─d354fac5-a772-480d-984f-dd5db4b39b5c
 # ╟─6434a755-90be-45f8-8e1e-cdeba4be244b
+# ╟─69068002-ca3a-4e19-9562-6736d3b15dea
+# ╟─f12538a9-f595-4fae-b76c-078179bc5109
 # ╟─4c674e97-7773-42e4-a4e9-513ddd8356be
+# ╟─2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 # ╟─7b095cb8-ab68-414f-966d-a964c5f2a256
 # ╟─9343a51e-5002-4489-a55f-12c49f5b8cf3
 # ╟─2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
 # ╟─fa546bd7-aaca-4dfb-ac03-72aa515c5343
-# ╟─f42eeff0-941f-4091-8e09-57ed8cc1261e
 # ╟─1018d35f-42e9-4970-8a5f-f5cc6e951cbc
 # ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
@@ -222,3 +258,6 @@ end
 # ╟─4d6f03c0-203a-4536-8ca2-c3dd77182ce6
 # ╟─86f7e74f-c0a9-4561-85b9-f3ed6559facc
 # ╟─8ea07dab-06dc-456d-9769-5e9c3980a777
+# ╟─12256359-1dca-4a71-a225-66994e2dfd66
+# ╟─7998136a-de3d-42f9-9028-1172415c8b75
+# ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789

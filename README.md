@@ -1,5 +1,5 @@
-# static-export-template
-
+# static-export-templat
+- for the commit 
 This is a demo repository containing two [Pluto](https://github.com/fonsp/Pluto.jl) notebooks that are **automatically converted to HTML** by a github action, and published to github pages! 🌝
 
 See the github pages deployment of this repository:
