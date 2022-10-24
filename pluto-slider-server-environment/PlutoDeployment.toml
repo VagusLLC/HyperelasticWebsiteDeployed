@@ -1,5 +1,19 @@
 [Export]
 offer_binder = false
+exclude = [
+    "*/WebcamInput",
+    "*/TransformedValue",
+    "*/TerminalNotebook",
+    "*/TableOfContents",
+    "*/Scrubbable",
+    "*/RangeSlider",
+    "*/MultiCheckBox",
+    "*/Layout",
+    "*/Confirm",
+    "*/Combine",
+    "*/Clock",
+    "*/Builtins"
+]
 
 [SliderServer]
 port = 443
