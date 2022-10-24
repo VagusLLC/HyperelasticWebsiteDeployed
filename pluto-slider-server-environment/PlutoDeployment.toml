@@ -1,18 +1,24 @@
 [Export]
 offer_binder = false
 exclude = [
-    "*/WebcamInput.jl",
-    "*/TransformedValue.jl",
-    "*/TerminalNotebook.jl",
-    "*/TableOfContents.jl",
-    "*/Scrubbable.jl",
-    "*/RangeSlider.jl",
-    "*/MultiCheckBox.jl",
-    "*/Layout.jl",
-    "*/Confirm.jl",
-    "*/Combine.jl",
-    "*/Clock.jl",
-    "*/Builtin.jls"
+    "PlutoUI/src/Builtins.jl",
+    "PlutoUI/src/Clock.jl",
+    "PlutoUI/src/Combine.jl",
+    "PlutoUI/src/Confirm.jl",
+    "PlutoUI/src/DisplayTricks.jl",
+    "PlutoUI/src/Images.jl",
+    "PlutoUI/src/Layout.jl",
+    "PlutoUI/src/MultiCheckBox.jl",
+    "PlutoUI/src/PlutoUI.jl",
+    "PlutoUI/src/RangeSlider.jl",
+    "PlutoUI/src/Resource.jl",
+    "PlutoUI/src/Scrubbable.jl",
+    "PlutoUI/src/ScrubbableMatrix.jl",
+    "PlutoUI/src/TableOfContents.jl",
+    "PlutoUI/src/TerminalNotebook.jl",
+    "PlutoUI/src/TransformedValue.jl",
+    "PlutoUI/src/WebcamInput.jl",
+    "PlutoUI/src/Wrapped.jl"
 ]
 
 [SliderServer]
