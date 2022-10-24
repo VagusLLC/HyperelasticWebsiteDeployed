@@ -119,7 +119,7 @@ if !isnothing(data)
 end;
 
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
-set_theme!(MakiePublication.theme_web(width = 800))
+set_theme!(MakiePublication.theme_web(width = 1000))
 
 # ╔═╡ b911d517-cf5d-4c9c-b838-eaa41b74329e
 begin
@@ -148,7 +148,7 @@ begin
 	output_string *= "make_model: make_model.checked"
 	output_string *= """}"""
 ####################             HTML        ##############################
-	_str *= """<center><h5> Initial Parameter Guess</h5></center>"""
+	_str *= """<center><h3> Initial Parameter Guess</h3></center>"""
 	_str *= """<table>"""
 	for column ∈ columns
 		_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
@@ -239,11 +239,13 @@ end
 
 # ╔═╡ 0fa152b1-462a-4f34-9753-13ef6ef63071
 begin
+		if !isnothing(data) && !isnothing(ps)
+		if ps["make_model"]
 	str_table = let
 		_str = "<span>"
 		columns = string.(parameters(getfield(Hyperelastics, model)()))
 	####################             HTML        ##############################
-		_str *= """<center><h5> Final Parameters</h5></center>"""
+		_str *= """<center><h3> Final Parameters</h3></center>"""
 		_str *= """<table>"""
 		for column ∈ columns
 			_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
@@ -259,6 +261,8 @@ begin
 		_str *= """</span>"""
 	end
 	HTML(str_table)
+		end
+		end
 end
 
 # ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
@@ -317,14 +321,13 @@ end
 # ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
 if !isnothing(data)
 if parsed && !isnothing(data)
-md"""
-# Other Values
+	HTML("""
+	<center><h2> Other Values </h2></center>
+	Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
+	<br>
+	Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
 
-Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
-
-Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
-
-"""
+	""")
 end
 end
 
