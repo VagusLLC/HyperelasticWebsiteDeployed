@@ -87,7 +87,7 @@ begin
 		style::CSS=Dict()
 		class::Union{String,Nothing}=nothing
 	end
-	
+
 	function Base.show(io::IO, m::MIME"text/html", d::HTLDiv)
 		h = @htl("""
 			<div style=$(d.style) class=$(d.class)>
@@ -155,7 +155,7 @@ repr(
 		<div style=$(d)>
 		asdf
 		</div>
-		
+
 		""")
 ) |> Text
   ╠═╡ =#
@@ -205,16 +205,16 @@ else
 end
 
 # ╔═╡ ca2a5bce-6565-4678-baea-535ac8ca3ca9
-Div(x::Iterable; style::CSS="", class::Union{Nothing,String}=nothing) = 
+Div(x::Iterable; style::CSS="", class::Union{Nothing,String}=nothing) =
 	if isdefined(Main, :PlutoRunner) && isdefined(Main.PlutoRunner, :DivElement)
-		Main.PlutoRunner.DivElement(; 
-			children=maybecollect(x), 
+		Main.PlutoRunner.DivElement(;
+			children=maybecollect(x),
 			style=to_css_string(style),
 			class=class,
 		)
 	else
 		HTLDiv(;
-			children=[embed_display(i) for i in x], 
+			children=[embed_display(i) for i in x],
 			style=style,
 			class=class,
 		)
@@ -277,7 +277,7 @@ export Div
 #=╠═╡
 Div(
 	"hello";
-	
+
 	style=Dict(
 		"background" => "pink",
 		"padding" => 20px,
@@ -292,11 +292,11 @@ Div(
 #=╠═╡
 Div(
 	["hello", "world"];
-	
+
 	style=Dict(
 		"display" => "flex",
 		"flex-direction" => "column",
-		
+
 		"background" => "pink",
 		"padding" => 20px,
 		"border-radius" => 1em,
@@ -323,15 +323,15 @@ flex(rand(UInt8, 3))
 #=╠═╡
 let
 	p = pascal(5)
-	
+
 	padder = Div([], style=Dict("flex" => "1 1 auto"))
-	
+
 	rows = map(p) do row
-		
+
 		items = map(row) do item
 			Div([item], style=Dict("margin" => "0px 5px"))
 		end
-		
+
 		flex(
 			[padder, items..., padder]
 		)
@@ -352,7 +352,7 @@ repr(
   ╠═╡ =#
 
 # ╔═╡ 8fbd9087-c932-4a01-bd44-69007e9f6656
-function grid(items::AbstractMatrix; 
+function grid(items::AbstractMatrix;
 		fill_width::Bool=true,
 		column_gap::Union{String,Hyperscript.Unit}=1em,
 		row_gap::Union{String,Hyperscript.Unit}=0em,
@@ -362,7 +362,7 @@ function grid(items::AbstractMatrix;
 	Div(
 		Div.(vec(permutedims(items, [2,1])));
 		style=Dict(
-			"display" => fill_width ? "grid" : "inline-grid", 
+			"display" => fill_width ? "grid" : "inline-grid",
 			"grid-template-columns" => "repeat($(size(items,2)), auto)",
 			"column-gap" => string(column_gap),
 			"row-gap" => string(row_gap),
@@ -411,8 +411,8 @@ grid(rand(UInt8, 10,10); fill_width=false)
 function aside(x)
 	@htl("""
 		<style>
-		
-		
+
+
 		@media (min-width: calc(700px + 30px + 300px)) {
 			aside.plutoui-aside-wrapper {
 				position: absolute;
@@ -424,13 +424,13 @@ function aside(x)
 			}
 		}
 		</style>
-		
+
 		<aside class="plutoui-aside-wrapper">
 		<div>
 		$(x)
 		</div>
 		</aside>
-		
+
 		""")
 end
 
@@ -543,7 +543,7 @@ begin
 	end
 
 	Base.show(io::IO, ::M, x::Show{M}) where M <: MIME = write(io, x.data)
-	
+
 	Show
 end
   ╠═╡ =#
@@ -570,68 +570,3 @@ end
 #=╠═╡
 aside(embed_display(p))
   ╠═╡ =#
-
-# ╔═╡ Cell order:
-# ╠═9113b5a3-d1a6-4594-bb84-33f9ae56c9e5
-# ╠═dd45b118-7a4d-45b3-8961-0c4fb337841b
-# ╠═a1c603fc-2c9e-47bd-9c51-b25f7104deb5
-# ╟─b1e7e95f-d6af-47e5-b6d4-1252804331d9
-# ╠═306ee9a7-152f-4c4a-867d-a4303f4ddd6c
-# ╠═574ef2ab-6438-49f5-ba63-12e0b4f69c7a
-# ╠═ba3bd054-a615-4c0e-9675-33f791f3faac
-# ╠═59c3941b-7377-4dbd-b0d2-75bf3bc7a8d1
-# ╠═4726f3fe-a761-4a58-a177-a2ef79663a90
-# ╟─cc64885c-d00e-4d9d-b542-94da606798b7
-# ╠═da22938c-ab2c-4a9a-9df3-c69000a33d78
-# ╠═06a2b4f2-056c-458e-9107-870ea7a25e2f
-# ╠═29d510b1-667e-4211-acf7-ae872cd2d1a5
-# ╠═f363e639-3799-4507-869c-b63c777988f5
-# ╠═13b03bde-3dec-4c56-8b8a-c484b2f644aa
-# ╠═d720ae98-f34f-4870-b09a-06499e2c936d
-# ╠═762c27a1-c71b-4354-8794-621bd0020397
-# ╟─4c0dc6e3-2596-40f6-8155-a1ae0326c33d
-# ╠═a3599e04-eaff-4be7-9ee0-a792274002b2
-# ╠═05865376-f0ad-4d16-a9eb-336791315f75
-# ╠═af48dde2-221b-4900-9719-df67dd5ae537
-# ╟─a17cdd72-a28e-4d2b-8ae1-31625d2bb870
-# ╠═32aea35b-7b19-4568-a569-7fe5ecb23d00
-# ╠═6eeec9ed-49bf-45dd-ae73-5cac8ca276f7
-# ╠═6e1d6a42-51e5-4dad-b149-78c805b90afa
-# ╠═5f69cc1c-463e-4958-9f58-f669514d49ac
-# ╠═9f5a12df-21c7-4f79-b1fb-908427943138
-# ╠═fe3d08e3-29bd-4edf-9d69-4f8824f8bd28
-# ╠═ec9c2c0e-ef97-464b-b1f0-257d80f3bc9c
-# ╠═60e07094-b102-48c0-8760-d94b9746fea1
-# ╠═d1878004-fe6f-483b-b06b-c88687680c86
-# ╠═df016b84-ab72-4659-9a5e-a63e4af85259
-# ╟─487c0e33-18e0-4823-89e7-0008e390c93a
-# ╟─4c5ca077-16db-4f10-af1a-ba510f4d6b49
-# ╠═ca2a5bce-6565-4678-baea-535ac8ca3ca9
-# ╠═e01077d8-3c44-4c6f-8a50-a9a6189613be
-# ╠═d801dd15-9f0a-4448-9ab4-7786e4279547
-# ╟─f24c4b3e-5155-46d5-a328-932719617ca6
-# ╠═9bb89479-fa6c-44d0-8bd1-bdd3db2880f6
-# ╠═a81011d5-e10f-4a58-941c-f69c4150730e
-# ╠═229274f2-5b10-4d58-944f-30d4acde04d8
-# ╠═b2ef0286-0ae5-4e2f-ac8d-18d7f48b5646
-# ╠═cf9c83c6-ee74-4fd4-ade4-5cd3d409f13f
-# ╠═9238ec64-a123-486e-a615-2e7631a1123f
-# ╠═0c5b1f00-57a6-494e-a508-cbac8b23b72e
-# ╠═a8f02660-32d8-428f-a0aa-d8eb06efabda
-# ╠═3666dc17-2e67-483c-9400-242453ce0ea1
-# ╠═9a9b39f4-7187-411e-8f50-3293f85a369e
-# ╠═8fbd9087-c932-4a01-bd44-69007e9f6656
-# ╠═8eef743b-bea0-4a97-b539-0723a231441b
-# ╠═081396af-0f8f-4d2a-b087-dfba01bfd7a7
-# ╠═ef2f1b47-bba7-48f7-96aa-e40349a9dca9
-# ╠═ec996b12-1678-406b-b5b6-dbb73eabc2bf
-# ╠═b2aa64b7-8bbc-4dd6-86a6-731a7a2e9c14
-# ╟─916f95ff-f568-48cc-91c3-ef2d2c9e397a
-# ╠═d24dfd97-5100-45f4-be12-ad30f98cc519
-# ╠═18cc9fbe-a37a-11eb-082b-e99673bd677d
-# ╠═9a166646-75c2-4711-9fad-665b01731759
-# ╠═d373edd9-5537-4f15-8c36-31aebc2569b5
-# ╟─50c3dce4-48c7-46b4-80a4-5af9cd83a0a8
-# ╟─87d374e1-e75f-468f-bc90-59d2013c361f
-# ╠═773685a4-a6f7-4f59-98d5-83adcd176a8e
-# ╟─9d82ca2b-664d-461e-a93f-61c467bd983a

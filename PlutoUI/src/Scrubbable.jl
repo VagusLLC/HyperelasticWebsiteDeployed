@@ -90,7 +90,7 @@ When you pass a **single number** to `Scrubbable`, this array is automatically c
 
 # ╔═╡ 207d3d2f-2841-4eca-839d-88f80c80c788
 md"""
-_(Here we created a `Scrubbable` on its own, without binding its value to a variable. Not very useful!)_ 
+_(Here we created a `Scrubbable` on its own, without binding its value to a variable. Not very useful!)_
 
 You can also **specify the array manually**:
 """
@@ -216,13 +216,13 @@ import AbstractPlutoDingetjes: AbstractPlutoDingetjes, Bonds
 # ╔═╡ 9c7ce2da-4ad8-11eb-14cd-cfcc8d2a6bf8
 begin
 	"""
-	
+
 	An inline number that can be changed by clicking and dragging the mouse.
-	
+
 	# Examples
 	```julia
 	md\"\"\"
-	_If Alice has \$(@bind a Scrubbable(20)) apples, 
+	_If Alice has \$(@bind a Scrubbable(20)) apples,
 	and she gives \$(@bind b Scrubbable(3)) apples to Bob..._
 	\"\"\"
 	```
@@ -231,24 +231,24 @@ begin
 	_...then Alice has **\$(a - b)** apples left._
 	\"\"\"
 	```
-	
+
 	In the examples above, we give the **initial value** as parameter, and the reader can change it to be lower or higher.
-	
+
 	## Custom range
 	Besides an initial value, a scrubbable number also has an array of possible values that can be reached. When you pass a **single number** to `Scrubbable`, this array is automatically created.
-	
+
 	You can also **specify the array manually**:
-	
+
 	```julia
 	@bind apples Scrubbable(200 : 300; default=220)
 	```
-	
+
 	## Formatting
 
 	The library [`d3-format`](https://github.com/d3/d3-format) is used to format floating-point numbers. You can specify a **format string** like `".2f"` to be used to format the scrubbable value. Have a look at their [documentation](https://github.com/d3/d3-format) to see more examples.
-	
+
 	`@bind money Scrubbable(30e6, format=".0s", prefix="€ ")`
-	
+
 	`@bind coolness Scrubbable(0.80 : 0.01 : 1.00, format=".0%", prefix="you are 🌝 ", suffix=" cool")`
 	"""
 	Base.@kwdef struct Scrubbable
@@ -260,19 +260,19 @@ begin
 	end
 	Scrubbable(range::AbstractVector; kwargs...) = Scrubbable(;values=range, default=range[1 + length(range) ÷ 2], kwargs...)
 	Scrubbable(x::Number; kwargs...) = Scrubbable(;values=nothing, default=x, kwargs...)
-	
+
 	Base.get(s::Scrubbable) = s.default
-	Bonds.initial_value(s::Scrubbable) = 
+	Bonds.initial_value(s::Scrubbable) =
 		s.default
-	Bonds.possible_values(s::Scrubbable) = 
+	Bonds.possible_values(s::Scrubbable) =
 		s.values === nothing ? default_range(s.default) : s.values
 	function Bonds.validate_value(s::Scrubbable, val)
 		val isa Real && minimum(s.values) - 0.001 <= val <= maximum(s.values) + 0.001
 	end
-	
+
 	function Base.show(io::IO, m::MIME"text/html", s::Scrubbable)
 		values = Bonds.possible_values(s)
-		
+
 		format = if s.format === nothing
 			# TODO: auto format
 			if eltype(values) <: Integer
@@ -327,7 +327,7 @@ begin
 
 			const onScrub = (e) => {
 				const offset = e.clientX - old_x
-				const new_index = Math.min(values.length-1, Math.max(0, 
+				const new_index = Math.min(values.length-1, Math.max(0,
 					Math.round(offset/10) + old_index
 				))
 
@@ -370,7 +370,7 @@ begin
 
 			</script>"""))
 	end
-	
+
 	Scrubbable
 end
 
@@ -378,7 +378,7 @@ end
 # ╠═╡ skip_as_script = true
 #=╠═╡
 md"""
-_If Alice has $(@bind a Scrubbable(20)) apples, 
+_If Alice has $(@bind a Scrubbable(20)) apples,
 and she gives $(@bind b Scrubbable(3)) apples to Bob..._
 """
   ╠═╡ =#
@@ -469,51 +469,3 @@ HTML(join(repr.([MIME"text/html"()], [Scrubbable(1.0) for _ in 1:100])))
 
 # ╔═╡ 1d34fec8-01cb-4bee-8144-d8cc13a87b8b
 export Scrubbable
-
-# ╔═╡ Cell order:
-# ╟─1e992cf1-7ea6-4c23-a573-3c867c22ada0
-# ╟─023869e9-236d-426e-8419-d398f1d20c3e
-# ╠═7777f629-dc29-44a8-9127-8e236c88d1ef
-# ╠═b62db8c0-4352-4d0f-83a2-ac170ef3337a
-# ╠═861a570a-3a77-4445-9217-3d38682cbb8c
-# ╟─d86baba8-1207-466b-9170-fdc5f2616152
-# ╟─10494af3-3d7d-47ae-8844-3ca139e7708b
-# ╠═5d6299e0-fb4a-448f-b87a-9d17b607fd6a
-# ╠═188e548a-2d5d-4680-9b0a-7bfb03b24dab
-# ╟─99a2907f-f748-47bd-92d2-88eb21e8e0f1
-# ╠═e9169074-6fec-43a6-badc-4b20d05050ab
-# ╠═65584961-4085-4fd6-8968-6951056f3b1c
-# ╟─0be135f4-ef36-41d1-8a20-1080ca8919a0
-# ╠═9e97e893-066c-4fc6-b380-9637994b7dac
-# ╟─207d3d2f-2841-4eca-839d-88f80c80c788
-# ╠═b69fb562-7e8e-4366-a53d-85173afc49be
-# ╟─a1d5ebd5-dec1-4486-9968-a9d6a539751a
-# ╟─270beb18-8288-48eb-9165-423e12ec8411
-# ╟─19549e7c-cf8a-4d79-814b-db89efc91a15
-# ╟─71bb41eb-908c-4b43-881b-5b6726fc6d0a
-# ╟─574564ab-ab15-490e-aff6-6300718ae751
-# ╟─c17663e3-8a3b-4d6b-8296-f8b996739a01
-# ╟─f8b9398e-afe6-4fdd-bc7a-9bb7b7c3cdc2
-# ╠═4e40dcad-9840-4517-9947-7fcd4dce69cd
-# ╠═e14b3395-831d-43d6-874e-cfb32f8edd05
-# ╠═018035dd-78d7-46d3-bd3c-5c136fa47929
-# ╟─e0ea8328-ddcc-4130-b2f6-0079f98402ad
-# ╠═e8a6ce9f-9f48-4e31-ad2a-e21d7e0415af
-# ╠═1e139b79-b703-43bf-a351-1a2d811aea6a
-# ╟─1e60fea6-33dc-417b-9928-eb5922b41759
-# ╠═6fe1f0f7-e8a1-441a-a676-ddd4b3b26668
-# ╠═cfcc5fbb-72f7-4223-a83e-96fe6971b143
-# ╟─1fa8edc6-9aa2-4082-bdeb-7517d9e2dd71
-# ╠═3f1c3fa5-2257-4c3a-aa75-0b3c59a7fcdc
-# ╠═2554121f-13e6-4b07-9c45-b2ccf154d07d
-# ╠═b081aa76-f080-4dd0-bcff-4bcc82a1c50a
-# ╠═66bfb39b-f708-4148-8359-c651eabd3a2e
-# ╠═8bce6b13-9600-49ca-a7ea-ba2f53028f1b
-# ╠═d17d259b-8379-46a7-ab54-cd2f697ec713
-# ╠═5c78e637-5733-4b0a-8dab-bf1cd9656d11
-# ╟─aed5fa58-4fe3-4596-b18d-a76cd98a5a1b
-# ╠═8c1d2b3b-8fa1-4356-8a9d-dff10cd0a336
-# ╠═58a5b0d2-88a6-4a83-bb26-05c05a51716b
-# ╠═b09cff15-804f-468f-ac3a-0ed825490a8b
-# ╠═9c7ce2da-4ad8-11eb-14cd-cfcc8d2a6bf8
-# ╠═1d34fec8-01cb-4bee-8144-d8cc13a87b8b

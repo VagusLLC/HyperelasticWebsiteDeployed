@@ -60,7 +60,7 @@ function force_color_crayons(f)
 	CRAYONS_PKGID = Base.PkgId(UUID("a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"), "Crayons")
 	if haskey(Base.loaded_modules, CRAYONS_PKGID)
 		Crayons = Base.loaded_modules[CRAYONS_PKGID]
-		original_crayons_force_color = Crayons.FORCE_COLOR[] 
+		original_crayons_force_color = Crayons.FORCE_COLOR[]
 		try
 			Crayons.FORCE_COLOR[] = true
 			f()
@@ -145,13 +145,13 @@ with_terminal() do
     x=1+1
     println(x)
     @warn "Oopsie!"
-end 
+end
 ```
 
 ```julia
 with_terminal(show_value=false) do
     @time x=sum(1:100000)
-end 
+end
 ```
 
 ```julia
@@ -263,28 +263,3 @@ with_terminal() do
 	@code_llvm [1,2,3,4,1//3] .* [2,3,4,.5]
 end
   ╠═╡ =#
-
-# ╔═╡ Cell order:
-# ╠═924c5ca1-f9f1-4b4b-b3d9-e74d6b2feae9
-# ╠═2da76520-1615-11ec-1ad7-8f93957b2e6e
-# ╠═1810dc75-f4c1-4d3f-963d-0f881abeee19
-# ╠═8f1483c0-49f0-4882-92d8-780d84e63d8d
-# ╠═fe8c0c2f-8555-44f0-ae30-628ad4860157
-# ╠═376b7763-dd17-4147-a246-a530ace698ec
-# ╠═4a93743e-0700-4049-880a-ac5b0cf0b0f5
-# ╟─e3975303-9295-489a-b0a5-cb6624eab890
-# ╟─6124c693-f752-4036-a011-b06300f61a6d
-# ╟─c98e0f1b-c489-48ed-b69e-5cbc06267429
-# ╠═bf684e0c-e0f2-452c-b9a4-8452233ff920
-# ╠═d416b336-a6ee-4059-93af-08b12d59defd
-# ╠═a0df0558-6b19-471d-b609-df3ee65dadbb
-# ╟─3072a9cf-ad45-463c-866e-ed2bba434a95
-# ╠═5cd4a175-2290-441a-989d-f26921d090bb
-# ╠═c2c01f9a-151d-46b5-9ffd-45087fbf9381
-# ╟─15383b08-1ad9-4f0b-9eb0-e55025ef5c26
-# ╠═24250f93-16ce-456c-919f-d3a3d57a58f0
-# ╠═d501d4fd-975b-4459-b9e0-bfb8947ee538
-# ╟─67e1fdf0-3bf7-4553-9be9-0f38bb2d2ef0
-# ╠═988d2c53-3f4f-40e8-8069-a24a8e10a8ca
-# ╟─342e1498-4dcd-46c3-ab43-75832e5655ff
-# ╠═e0d49688-ef83-4607-8747-7e4e4f0003c2

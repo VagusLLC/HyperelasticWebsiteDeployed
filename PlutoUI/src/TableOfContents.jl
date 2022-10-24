@@ -47,7 +47,7 @@ md"""
 # ╔═╡ d6940210-4f9b-47b5-af74-e53700a42417
 const toc_js = toc -> @htl """
 <script>
-	
+
 const indent = $(toc.indent)
 const aside = $(toc.aside)
 const title_text = $(toc.title)
@@ -72,15 +72,15 @@ const getParentCell = el => el.closest("pluto-cell")
 const getHeaders = () => {
 	const depth = Math.max(1, Math.min(6, $(toc.depth))) // should be in range 1:6
 	const range = Array.from({length: depth}, (x, i) => i+1) // [1, ..., depth]
-	
+
 	const selector = [
 		...(include_definitions ? [
-			`pluto-notebook pluto-cell .pluto-docs-binding`, 
-			`pluto-notebook pluto-cell assignee:not(:empty)`, 
+			`pluto-notebook pluto-cell .pluto-docs-binding`,
+			`pluto-notebook pluto-cell assignee:not(:empty)`,
 		] : []),
 		...range.map(i => `pluto-notebook pluto-cell h\${i}`)
 	].join(",")
-	return Array.from(document.querySelectorAll(selector)).filter(el => 
+	return Array.from(document.querySelectorAll(selector)).filter(el =>
 		// exclude headers inside of a pluto-docs-binding block
 		!(el.nodeName.startsWith("H") && el.closest(".pluto-docs-binding"))
 	)
@@ -113,7 +113,7 @@ const intersection_callback = (ixs) => {
 			let div = header_to_index_entry_map.get(i.target)
 			div.classList.add("in-view")
 			currently_highlighted_set.add(div)
-			
+
 			/// scroll into view
 			/*
 			const toc_height = tocNode.offsetHeight
@@ -121,10 +121,10 @@ const intersection_callback = (ixs) => {
 			const div_height = div.offsetHeight
 			const current_scroll = tocNode.scrollTop
 			const header_height = tocNode.querySelector("header").offsetHeight
-			
+
 			const scroll_to_top = div_pos - header_height
 			const scroll_to_bottom = div_pos + div_height - toc_height
-			
+
 			// if we set a scrollTop, then the browser will stop any currently ongoing smoothscroll animation. So let's only do this if you are not currently in a smoothscroll.
 			if(Date.now() - last_toc_element_click_time.current >= 2000)
 				if(current_scroll < scroll_to_bottom){
@@ -161,8 +161,8 @@ const render = (elements) => {
 
 		let [className, title_el] = h.matches(`.pluto-docs-binding`) ? ["pluto-docs-binding-el", h.firstElementChild] : [h.nodeName, h]
 
-	const a = html`<a 
-		class="\${className}" 
+	const a = html`<a
+		class="\${className}"
 		title="\${title_el.innerText}"
 		href="#\${parent_cell.id}"
 	>\${title_el.innerHTML}</a>`
@@ -176,13 +176,13 @@ const render = (elements) => {
 			'highlight-pluto-cell-shoulder'
 		)
 	} */
-		
-		
+
+
 	a.onclick=(e) => {
 		e.preventDefault();
 		last_toc_element_click_time.current = Date.now()
 		h.scrollIntoView({
-			behavior: 'smooth', 
+			behavior: 'smooth',
 			block: 'start'
 		})
 	}
@@ -194,7 +194,7 @@ const render = (elements) => {
 
 	if(className.startsWith("H"))
 		last_level = className
-		
+
 	return row
 })}`
 }
@@ -244,7 +244,7 @@ bodyClassObserver.observe(document.body, {attributeFilter: ["class"]})
 
 // Hide/show the ToC when the screen gets small
 let m = matchMedia("(max-width: 1000px)")
-let match_listener = () => 
+let match_listener = () =>
 	tocNode.classList.toggle("hide", m.matches)
 match_listener()
 m.addListener(match_listener)
@@ -410,7 +410,7 @@ const toc_css = @htl """
 }
 
 
-	
+
 .highlight-pluto-cell-shoulder {
 	background: rgba(0, 0, 0, 0.05);
 	background-clip: padding-box;
@@ -474,7 +474,7 @@ begin
 		include_definitions::Bool=false
 	end
 	@doc """
-	Generate Table of Contents using Markdown cells. Headers h1-h6 are used. 
+	Generate Table of Contents using Markdown cells. Headers h1-h6 are used.
 
 	# Keyword arguments:
 	`title` header to this element, defaults to "Table of Contents"
@@ -496,7 +496,7 @@ begin
 	```
 	"""
 	TableOfContents
-	
+
 	end
 	function Base.show(io::IO, m::MIME"text/html", toc::TableOfContents)
 		Base.show(io, m, @htl("$(toc_js(toc))$(toc_css)"))
@@ -656,24 +656,3 @@ $p
 # L1 Appendix
 """
   ╠═╡ =#
-
-# ╔═╡ Cell order:
-# ╠═e3f5cbc5-a443-43d3-b15c-e33e2d655450
-# ╠═3061a5a6-feda-4538-8076-30c70c9b8766
-# ╠═366a853d-3662-445a-940f-09e6e501a92a
-# ╠═98cd39ae-a93c-40fe-a5d1-0883e1542e22
-# ╠═ed0f13cc-4f7d-476b-a434-d14313d88eea
-# ╠═fdf8750b-653e-4f23-8f8f-9e2ef4e24e75
-# ╠═7c32fd56-6cc5-420b-945b-53446833a125
-# ╟─6043d6c5-54e4-40c1-a8a5-aec3ad7e1aa0
-# ╠═2e749ba7-3469-434d-9011-bb9396ffd149
-# ╟─fb46ccb4-0195-4b5c-9992-dc0d930ea868
-# ╠═434cc67b-a1e8-4804-b7ba-f47d0f879046
-# ╟─c98059f6-2078-46f6-a2ea-4e70c226b2be
-# ╠═d6940210-4f9b-47b5-af74-e53700a42417
-# ╟─354d8ac1-5c55-4765-8681-656c0da2f1a9
-# ╠═731a4662-c329-42a2-ae71-7954140bb290
-# ╠═3ab2da5f-943e-42e8-8e46-4a7031ba4227
-# ╠═7b27a858-9d3a-4324-a56c-98e6f31d5929
-# ╠═27adc83b-c052-40fb-8a8d-7d6fcb7c8e30
-# ╠═b3e73e1a-f8b3-4973-a052-69c8f12ebbf1

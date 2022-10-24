@@ -74,14 +74,14 @@ begin
 		show_value::Bool
 		default::AbstractRange
 
-		RangeSlider(range::AbstractRange; 
-				default::AbstractRange=range, 
+		RangeSlider(range::AbstractRange;
+				default::AbstractRange=range,
 				show_value::Bool=true,
 				# for compat
 				left=nothing,
 				right=nothing,
 			) = let
-			
+
 			if show_compat_warning_ref[] && (left !== nothing || right !== nothing)
 				@warn "Compat: The keyword arguments `left` and `right` will be removed in the future, use the `default` keyword argument instead."
 			end
@@ -89,7 +89,7 @@ begin
 			stop = something(right, maximum(default))
 
 			default = start:step(range):stop
-			
+
 			@assert default ⊆ range "The default range is not a subset of the slidable range. Verify that the beginning and end of the default range are inside the slidable range."
 			new(range, show_value, default)
 		end
@@ -102,22 +102,22 @@ begin
 			return
 		end
 		show(io, m, @htl("""
-		<span><link 
+		<span><link
 			href="https://cdn.jsdelivr.net/npm/nouislider@15.5.0/dist/nouislider.css" rel="stylesheet"/><style>
 		.plutoui-rangeslider .noUi-connect {
 			background: #0075ff;
 		}
-		
+
 		.plutoui-rangeslider.noUi-horizontal {
 			height: 10px;
 		}
-		
+
 		.plutoui-rangeslider.noUi-horizontal .noUi-handle {
 			width: 19px;
 			height: 19px;
     		transform: translateX(-10px);
 		}
-		
+
 		.plutoui-rangeslider .noUi-handle:before,
 		.plutoui-rangeslider .noUi-handle:after {
 			content: unset;
@@ -125,7 +125,7 @@ begin
 		.plutoui-rangeslider.noUi-horizontal .noUi-tooltip {
 			line-height: 1rem;
 		}
-		
+
 		</style><script>
 		const {default: noUiSlider} = await import( "https://cdn.jsdelivr.net/npm/nouislider@15.5.0/dist/nouislider.min.mjs")
 		const {default: throttle} = await import("https://cdn.jsdelivr.net/npm/lodash-es@4.17.21/throttle.js")
@@ -133,8 +133,8 @@ begin
 		let show_value = $(rs.show_value)
 		const el = html`<div style='
 		    display: inline-block;
-			font-family: system-ui; 
-			font-size: .75rem; 
+			font-family: system-ui;
+			font-size: .75rem;
 			min-width: 10rem;
 			min-height: 10px;
 			margin: \${show_value ? "2.5rem" : "0.5rem"} 1rem .5rem 1rem;
@@ -145,13 +145,13 @@ begin
 		const step = $(Float64(step(rs.range)))
 
 		let is_integer = Number.isInteger(step) && Number.isInteger(start)
-		
+
 		let num_decimals = Math.max(is_integer ? 0 : 1, -1 * Math.floor(Math.log10(step)))
 		const formatter = {
 		to: x => x.toLocaleString("en-US", { maximumFractionDigits: num_decimals, minimumFractionDigits: num_decimals })
-		
+
 		}
-		
+
 		const slider = noUiSlider.create(el, {
 			start: [$(Float64(minimum(rs.default))), $(Float64(maximum(rs.default)))],
 			connect: true,
@@ -162,37 +162,37 @@ begin
 			tooltips: $(rs.show_value) && [formatter, formatter],
 			step: step,
 		});
-		
+
 		// console.log(slider)
 		let root = currentScript.parentElement
-		
+
 		let busy = false
 		slider.on("start", () => {busy = true})
 		slider.on("end", () => {busy = false})
-		
+
 		let handler = (e) => {
 			// console.warn(e, root.value, 123)
 			root.dispatchEvent(new CustomEvent("input"))
 		}
-		
+
 		slider.on("slide", handler)
 		slider.on("drag", handler)
 		invalidation.then(() => {
 			slider.off("slide", handler)
 			slider.off("drag", handler)
 		})
-		
+
 		Object.defineProperty(root, 'value', {
 		get: () => slider.get(true),
 		set: (newval) => {
 			if(!busy) {
-				
+
 				slider.set(newval)
 			}
 		}
 		})
-		
-		
+
+
 		return el
 		</script></span>"""))
 	end
@@ -201,14 +201,14 @@ begin
 
 	function AbstractPlutoDingetjes.Bonds.transform_value(rs::RangeSlider, js_val::Any)
 		if js_val isa Vector && length(js_val) == 2
-			
+
 			rounded_range = closest.([rs.range], js_val)
 			rounded_range[1] : step(rs.range) : rounded_range[2]
 		else
 			rs.default
 		end
 	end
-	
+
 
 end
 
@@ -503,37 +503,3 @@ deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 version = "17.4.0+0"
 """
-
-# ╔═╡ Cell order:
-# ╠═2150eb64-4f79-11ec-1eec-a9db61b6d8f3
-# ╟─d1db2fc1-f465-49e3-b6a7-848137c8948d
-# ╠═8c2c225b-d142-451e-9a04-296230b73bf3
-# ╠═891e953e-7f6c-4def-8ba0-91f351c5b283
-# ╠═3764fff6-3f77-41dd-91fc-228d00474ab5
-# ╟─ce83a3d3-ed13-4b0a-80a4-a27f45c49b67
-# ╠═ea0bf76f-e51b-471d-b958-d331b3a64bc8
-# ╠═8da460e7-c1b6-45b0-aa12-5eab97cdcf24
-# ╠═0ebaa1fe-9eea-4c5e-9f3e-9498fefa2869
-# ╟─63998497-5fcf-440e-9e2b-d138f0bffbfe
-# ╟─5e6f075e-9719-4ee3-9841-99a153f1f83b
-# ╠═8ec7e04b-3c32-4b38-9aa5-38c14b742393
-# ╠═1e86ff39-8cc2-4dcf-80a9-b0d45a1e7a0e
-# ╠═b9066464-d4df-4a2c-82f4-34eaa50bb487
-# ╟─2576d239-2252-48ee-8999-8a3ee2b70a98
-# ╠═48531527-c8ae-46f2-a6b9-d9056ef583bf
-# ╠═c06b7708-f508-40c1-a34c-c64f17f04c74
-# ╠═ecce7dfb-9885-4fda-9ec0-fd4189b7bc06
-# ╠═eeed3ebd-0431-4fbe-8f1e-09f14df2f87e
-# ╠═aab79d69-3435-48be-a8c2-752b55867468
-# ╠═128642a9-5f52-4712-b60b-cc7814a2401b
-# ╠═2a7d7469-270d-4165-b167-e1dbeb0a9598
-# ╠═34553132-0392-45a2-8d6d-3c8c2252d01f
-# ╠═8ac624df-306f-4a87-b25a-eb8cd9d1f30b
-# ╠═ab48cd4a-e4c3-4eca-84a1-689e874ce0e4
-# ╠═4f2f6baa-1deb-4132-bfe5-4a6ef1e8ec86
-# ╠═0a4bc67c-67e9-4001-a1c1-c079a984215d
-# ╠═ec579632-c508-4ada-8561-1ed26f1a60cc
-# ╠═18e7f591-1d3e-42da-84d6-bc5350f85535
-# ╠═f6a97b41-3513-4dc7-b767-d966c682956a
-# ╟─00000000-0000-0000-0000-000000000001
-# ╟─00000000-0000-0000-0000-000000000002
