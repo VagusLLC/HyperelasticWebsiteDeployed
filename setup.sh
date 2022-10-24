@@ -10,10 +10,10 @@ sudo apt update
 sudo apt install gh -y
 gh auth login
 # Install Julia
-wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.0-linux-x86_64.tar.gz
-tar -xvf julia-1.8.0-linux-x86_64.tar.gz
-sudo ln -s ~/julia-1.8.0/bin/julia /usr/local/bin/julia
-rm julia-1.8.0-linux-x86_64.tar.gz
+wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.2-linux-x86_64.tar.gz
+tar -xvf julia-1.8.2-linux-x86_64.tar.gz
+sudo ln -s ~/julia-1.8.2/bin/julia /usr/local/bin/julia
+rm julia-1.8.2-linux-x86_64.tar.gz
 julia -e ''
 cd
 gh repo clone cfarm6/HyperelasticWebsiteDeployed
