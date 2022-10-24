@@ -40,7 +40,7 @@ begin
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "ContinuumModels")),
-		Pkg.PackageSpec(name="PlutoUI"),
+		Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
 	])
 	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations, ContinuumModels, LabelledArrays, CairoMakie, MakiePublication
 end
@@ -82,7 +82,9 @@ md"""
 
 # ╔═╡ 9343a51e-5002-4489-a55f-12c49f5b8cf3
 md"""
-When selecting a phenomenological model, be aware that using higher order models may result in overfitting of the data.
+!!! note "Note"
+	- When selecting a phenomenological model, be aware that using higher order models may result in overfitting of the data.
+	- All moduli in models are in the defined stress units above
 """
 
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
