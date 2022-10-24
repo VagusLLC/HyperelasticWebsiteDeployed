@@ -45,40 +45,22 @@ begin
 	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations, ContinuumModels, LabelledArrays, CairoMakie, MakiePublication
 end
 
-# ╔═╡ 2a464508-4069-448b-a638-7253310ab16b
-md"""
-# Vagus, LLC - Hyperelastic Model Fitting Toolbox
-## Upload Uniaxial Test Data
-"""
+# ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
+TableOfContents()
+
+# ╔═╡ 73ab5774-dc3c-4759-92c4-7f7917c18cbf
+HTML("""<center><h1>Vagus, LLC - Hyperelastic Model Fitting Toolbox</h1></center>
+		<center><h2>Upload Uniaxial Test Data</h2></center>
+		""")
 
 # ╔═╡ 6434a755-90be-45f8-8e1e-cdeba4be244b
 @bind data FilePicker()
 
 # ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
-md"""
-## Verification Plot
-"""
+HTML("""<center><h2>Verification Plot</h2></center>""")
 
-# ╔═╡ 4c674e97-7773-42e4-a4e9-513ddd8356be
-# if !isnothing(data)
-# 	p = Plot(
-# 		Config(
-# 			x = df[!, stretch_column], 
-# 			y = df[!, stress_column],
-# 			type = "scatter",
-# 			mode="markers",
-# 			name="Experimental"
-# 		)
-# 	)
-# 	p.layout.xaxis.title = "Stretch"
-# 	p.layout.yaxis.title = "Stress [$stress_units]"
-# 	p
-# end
-
-# ╔═╡ 7b095cb8-ab68-414f-966d-a964c5f2a256
-md"""
-# Select Hyperelastic Models to fit to the data
-"""
+# ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
+HTML("""<center><h2>Select Hyperelastic Model</h2></center>""")
 
 # ╔═╡ 9343a51e-5002-4489-a55f-12c49f5b8cf3
 md"""
@@ -95,23 +77,6 @@ end;
 
 # ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
 @bind model Select(hyperelastic_models)
-
-# ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
-function set_parameters(model)
-	return PlutoUI.combine() do Child
-		inputs = [
-			md"""$(string(model)*" "*string(p)) $(Child(string(p), TextField()))"""
-			for p in Hyperelastics.parameters(getfield(Hyperelastics, model)())
-		]
-		md"""
-		#### Set initial parameter guess
-		$(inputs)
-		"""
-	end
-end;
-
-# ╔═╡ fa546bd7-aaca-4dfb-ac03-72aa515c5343
-@bind ps confirm(set_parameters(model))
 
 # ╔═╡ 86f7e74f-c0a9-4561-85b9-f3ed6559facc
 function ShearModulus(ψ, ps)
@@ -153,36 +118,151 @@ if !isnothing(data)
 	he_data = UniaxialHyperelasticData(df[!, stress_column], df[!, stretch_column]);
 end;
 
-# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
+# ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
+set_theme!(MakiePublication.theme_web(width = 1000))
+
+# ╔═╡ b911d517-cf5d-4c9c-b838-eaa41b74329e
 begin
-	if !isnothing(data)
-	parsed, p₀ = try
-		true, LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
+	Hyperelastics.parameters(ψ::ContinuumHybrid) = (:K1, :K2, :α, :μ)
+	Hyperelastics.parameters(ψ::Zhao) = (:Cm11, :C11, :C21, :C22)
+	Hyperelastics.parameters(ψ::Zhao) = (:Cm11, :C11, :C21, :C22)
+	Hyperelastics.parameters(ψ::HartSmith) = (:G, :k1, :k2)
+	Hyperelastics.parameters(ψ::GornetDesmorat) = (:h1, :h2, :h3)
+	Hyperelastics.parameters(ψ::Alexander) = (:C1, :C2, :C3, :k, :γ)
+	Hyperelastics.parameters(ψ::Beatty) = (:G0, :Im)
+	Hyperelastics.parameters(ψ::ZunigaBeatty) = (:μ, :N3, :N8)
+	Hyperelastics.parameters(ψ::Lim) = (:μ1, :μ2, :N, :Î1)
+	Hyperelastics.parameters(ψ::BechirChevalier) = (:μ0, :η, :ρ, :N3, :N8)
+end
+
+# ╔═╡ f2a51df9-0396-436d-926c-587ad6e41ff4
+# ╠═╡ show_logs = false
+begin
+	str = let
+	_str = "<span>"
+	columns = string.(parameters(getfield(Hyperelastics, model)()))
+	output_string = "{"
+	for column ∈ columns
+		output_string *= """$(column):$(column)_$(1).value,"""
+	end
+	output_string *= "make_model: make_model.checked"
+	output_string *= """}"""
+####################             HTML        ##############################
+	_str *= """<center><h3> Initial Parameter Guess</h3></center>"""
+	_str *= """<table>"""
+	for column ∈ columns
+		_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
+	end
+	_str *= """<tr>"""
+	for column ∈ columns
+		_str *= """<td><input type = "text" id = "$(column)_$(1)"></input></td>"""
+	end
+	_str *= """</tr>"""
+	_str *= """<tfoot><tr><td></td>"""
+	_str *= """<td></td></tr></tfoot>"""
+	_str *= """</table>"""
+	_str *= """<center>Fit Parameters:<input type = "checkbox" id = "make_model"</input></center>"""
+######################        JAVASCRIPT            ####################
+	_str *= """
+		<script>		
+			var span = currentScript.parentElement
+		"""
+		for column ∈ columns
+		_str*="""
+			var $(column)_$(1) = document.getElementById("$(column)_$(1)")
+		
+			$(column)_$(1).addEventListener("input", (e) => {
+				span.value = $(output_string)
+				span.dispatchEvent(new CustomEvent("input"))
+				e.preventDefault()
+			})
+		"""
+		end
+		
+	for i ∈ ["make_model"]
+		_str*="""
+			var $(i) = document.getElementById("$(i)")
+			$(i).addEventListener("input", (e) => {
+				span.value = $(output_string)
+				span.dispatchEvent(new CustomEvent("input"))
+				e.preventDefault()
+			})
+		"""
+	end
+	_str*="""
+		span.value = $(output_string)
+		</script>
+		</span>
+		"""
+	end
+	@bind ps HTML(str)
+end
+
+# ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
+function set_parameters(model)
+	return PlutoUI.combine() do Child
+		inputs = [
+			md"""$(string(model)*" "*string(p)) $(Child(string(p), TextField()))"""
+			for p in Hyperelastics.parameters(getfield(Hyperelastics, model)())
+		]
+		md"""
+		### Set initial parameter guess
+		$(inputs)
+		"""
+	end
+end;
+
+# ╔═╡ d58bc6f1-a819-4d8b-8817-a742e93e8a7f
+begin
+	parsed = false
+	p₀ = LVector()
+	if !isnothing(data) && !isnothing(ps)
+		if ps["make_model"]
+			ψ = getfield(Hyperelastics, Symbol(model))()
+			fields = string.(parameters(ψ))
+			vals = getindex.((ps,), fields)
+		end
+  	parsed, p₀ = try
+		true, LVector(NamedTuple(Symbol.(fields) .=> parse.(Float64, vals)))
 	catch
 		false, nothing
 	end
 	if parsed
-		ψ = getfield(Hyperelastics, Symbol(model))()
 		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
 		solution = solve(heprob, LBFGS())
 		sol = NamedTuple(solution.u)
 		sol
 	end
 	end
+	nothing
 end
 
-# ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
-if !isnothing(data)
-if parsed && !isnothing(data)
-md"""
-# Other Values
-
-Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
-
-Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
-
-"""
-end
+# ╔═╡ 0fa152b1-462a-4f34-9753-13ef6ef63071
+begin
+		if !isnothing(data) && !isnothing(ps)
+		if ps["make_model"]
+	str_table = let
+		_str = "<span>"
+		columns = string.(parameters(getfield(Hyperelastics, model)()))
+	####################             HTML        ##############################
+		_str *= """<center><h3> Final Parameters</h3></center>"""
+		_str *= """<table>"""
+		for column ∈ columns
+			_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
+		end
+		_str *= """<tr>"""
+		for column ∈ columns
+			_str *= """<td>$(round(getfield(sol, Symbol(column)), sigdigits = 6))</input></td>"""
+		end
+		_str *= """</tr>"""
+		_str *= """<tfoot><tr><td></td>"""
+		_str *= """<td></td></tr></tfoot>"""
+		_str *= """</table>"""
+		_str *= """</span>"""
+	end
+	HTML(str_table)
+		end
+		end
 end
 
 # ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
@@ -238,21 +318,68 @@ let
 	end
 end
 
-# ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
-set_theme!(MakiePublication.theme_web(width = 800))
+# ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
+if !isnothing(data)
+if parsed && !isnothing(data)
+	HTML("""
+	<center><h2> Other Values </h2></center>
+	Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
+	<br>
+	Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
+
+	""")
+end
+end
+
+# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
+# begin
+# 	if !isnothing(data)
+# 	parsed, p₀ = try
+# 		true, LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
+# 	catch
+# 		false, nothing
+# 	end
+# 	if parsed
+# 		ψ = getfield(Hyperelastics, Symbol(model))()
+# 		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
+# 		solution = solve(heprob, LBFGS())
+# 		sol = NamedTuple(solution.u)
+# 		sol
+# 	end
+# 	end
+# end
+
+# ╔═╡ fa546bd7-aaca-4dfb-ac03-72aa515c5343
+# @bind ps confirm(set_parameters(model))
+
+# ╔═╡ 4c674e97-7773-42e4-a4e9-513ddd8356be
+# if !isnothing(data)
+# 	p = Plot(
+# 		Config(
+# 			x = df[!, stretch_column], 
+# 			y = df[!, stress_column],
+# 			type = "scatter",
+# 			mode="markers",
+# 			name="Experimental"
+# 		)
+# 	)
+# 	p.layout.xaxis.title = "Stretch"
+# 	p.layout.yaxis.title = "Stress [$stress_units]"
+# 	p
+# end
 
 # ╔═╡ Cell order:
-# ╟─2a464508-4069-448b-a638-7253310ab16b
+# ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
+# ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
 # ╟─6434a755-90be-45f8-8e1e-cdeba4be244b
 # ╟─69068002-ca3a-4e19-9562-6736d3b15dea
 # ╟─f12538a9-f595-4fae-b76c-078179bc5109
-# ╟─4c674e97-7773-42e4-a4e9-513ddd8356be
 # ╟─2607b1b6-9c9c-482f-b38b-35e83a57f5d3
-# ╟─7b095cb8-ab68-414f-966d-a964c5f2a256
+# ╟─d0319d95-f335-48fa-b789-59daf9a0f1a4
 # ╟─9343a51e-5002-4489-a55f-12c49f5b8cf3
 # ╟─2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
-# ╟─fa546bd7-aaca-4dfb-ac03-72aa515c5343
-# ╟─1018d35f-42e9-4970-8a5f-f5cc6e951cbc
+# ╟─f2a51df9-0396-436d-926c-587ad6e41ff4
+# ╟─0fa152b1-462a-4f34-9753-13ef6ef63071
 # ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
@@ -263,3 +390,8 @@ set_theme!(MakiePublication.theme_web(width = 800))
 # ╟─12256359-1dca-4a71-a225-66994e2dfd66
 # ╟─7998136a-de3d-42f9-9028-1172415c8b75
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
+# ╟─b911d517-cf5d-4c9c-b838-eaa41b74329e
+# ╟─d58bc6f1-a819-4d8b-8817-a742e93e8a7f
+# ╟─1018d35f-42e9-4970-8a5f-f5cc6e951cbc
+# ╟─fa546bd7-aaca-4dfb-ac03-72aa515c5343
+# ╟─4c674e97-7773-42e4-a4e9-513ddd8356be
