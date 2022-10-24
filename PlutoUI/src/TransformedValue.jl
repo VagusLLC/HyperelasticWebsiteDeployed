@@ -1,6 +1,3 @@
-### A Pluto.jl notebook ###
-# v0.19.12
-
 using Markdown
 using InteractiveUtils
 
@@ -66,12 +63,12 @@ begin
 
 	function Base.show(io::IO, m::MIME"text/html", tw::TransformedWidget)
 		supported = AbstractPlutoDingetjes.is_supported_by_display(io, Bonds.transform_value) && AbstractPlutoDingetjes.is_supported_by_display(io, Bonds.initial_value)
-		
+
 		return Base.show(io, m, supported ? tw.x : compat_error)
 	end
 
 	# AbstractPlutoDingetjes.jl
-	
+
 	function Bonds.transform_value(tw::TransformedWidget, from_js)
 		tw.transform(Bonds.transform_value(tw.x, from_js))
 	end
@@ -96,10 +93,10 @@ begin
 
 	# These next two methods are about the value *before* transformation
 	# so the user does not need to define those. Yay!
-	Bonds.possible_values(tw::TransformedWidget) = 
+	Bonds.possible_values(tw::TransformedWidget) =
 		Bonds.possible_values(tw.x)
-	
-	Bonds.validate_value(tw::TransformedWidget, from_browser) = 
+
+	Bonds.validate_value(tw::TransformedWidget, from_browser) =
 		Bonds.validate_value(tw.x, from_browser)
 
 	TransformedWidget
@@ -111,19 +108,19 @@ end
 transformed_value(transform::Function, widget::Any)
 ```
 
-Create a new widget that wraps around an existing one, with a **value transformation**. 
+Create a new widget that wraps around an existing one, with a **value transformation**.
 
-This function creates a so-called *high-level widget*: it returns your existing widget, but with additional functionality. You can use it in your package 
+This function creates a so-called *high-level widget*: it returns your existing widget, but with additional functionality. You can use it in your package
 
 # Example
 A simple example to get the point accross:
 ```julia
-function RepeatedTextSlider(text::String)	
+function RepeatedTextSlider(text::String)
 	old_widget = PlutoUI.Slider(1:10)
 
 	# our transformation function
 	transform = input -> repeat(text, input)
-	
+
 	# use `transformed_value` to add the value tranformation to our widget
 	new_widget = transformed_value(transform, old_widget)
 	return new_widget
@@ -147,7 +144,7 @@ function RepeatedTextSlider()
 	old_widget = PlutoUI.combine() do Child
 		md""\" \$(Child(PlutoUI.TextField())) \$(Child(PlutoUI.Slider(1:10)))""\"
 	end
-	
+
 	# Note that the input to `transform` is now a Tuple!
 	# (This is the output of `PlutoUI.combine`)
 	transform = input -> repeat(input[1], input[2])
@@ -172,12 +169,12 @@ end
 # ╔═╡ 22109e0c-1815-4b70-9f8c-182b8fe186ea
 # ╠═╡ skip_as_script = true
 #=╠═╡
-function RepeatedTextSlider(text::String)	
+function RepeatedTextSlider(text::String)
 	old_widget = PlutoUI.Slider(1:10)
 
 	# our transformation function
 	transform = input -> repeat(text, input)
-	
+
 	# use `transformed_value` to add the value tranformation to our widget
 	new_widget = transformed_value(transform, old_widget)
 	return new_widget
@@ -191,7 +188,7 @@ function RepeatedTextSlider()
 	old_widget = PlutoUI.combine() do Child
 		md""" $(Child(PlutoUI.TextField())) $(Child(PlutoUI.Slider(1:10)))"""
 	end
-	
+
 	# Note that the input to `transform` is now a Tuple!
 	# (This is the output of `PlutoUI.combine`)
 	transform = input -> repeat(input[1], input[2])
@@ -223,21 +220,3 @@ greeting
 #=╠═╡
 custom_greeting
   ╠═╡ =#
-
-# ╔═╡ Cell order:
-# ╠═f85cb5fc-246d-46a1-9875-9c06b7f102d6
-# ╠═b88673ff-30b2-4aca-b0d1-b55a1cd393e7
-# ╠═b230e180-8e51-4490-8c3e-66a8829a3b7e
-# ╠═eab272db-413a-44e4-9c07-b1c1b96e9a5c
-# ╟─80906b18-59b2-4fdf-ba8b-e8080da7066e
-# ╟─36ff1ff5-cd12-4d66-835b-2b1a6aa9020d
-# ╠═22109e0c-1815-4b70-9f8c-182b8fe186ea
-# ╠═7d449272-2e96-418a-80a8-50479cefea7c
-# ╠═3ab47131-fa65-4e6b-8205-b11620795bfc
-# ╠═99df4d14-4fa3-47f1-a002-047d1be18e27
-# ╠═22004433-904a-42ae-8407-db87a6417389
-# ╠═aecc84f8-3024-4441-ae00-ca1c00db72c0
-# ╟─906a7a0c-3ae6-42e6-be62-89d504c348ba
-# ╠═78795f88-46b9-40af-8100-4e05cfaf3b85
-# ╠═666c938a-87fd-4db2-b4f6-992e3c7ef0d9
-# ╟─70f18bbf-c933-4017-a1e4-e4dc84f6e696
