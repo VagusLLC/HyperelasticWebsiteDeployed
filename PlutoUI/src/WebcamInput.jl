@@ -1,6 +1,3 @@
-### A Pluto.jl notebook ###
-# v0.19.14
-
 using Markdown
 using InteractiveUtils
 
@@ -22,7 +19,7 @@ begin
 	Pkg.activate(temp=true)
 	Pkg.add(["ImageShow", "ImageIO", "PNGFiles"])
 	using ImageShow, ImageIO, PNGFiles # these packages are only loaded in this notebook (to see the images), not in the PlutoUI package
-	
+
 	Pkg.activate(Base.current_project(@__DIR__))
 	Pkg.instantiate()
 end
@@ -62,7 +59,7 @@ function ImageDataToRGBA(d::Dict)
 			reinterpret( # lazy UInt8 to RGB{N0f8}
 				RGB{N0f8}, d["data"]::Vector{UInt8}),
 				width, height
-			), 
+			),
 		(2,1)
 	)
 end
@@ -86,7 +83,7 @@ end
 
 # ╔═╡ 6dd82485-a392-4110-9148-f70f0e7c0985
 const standard_default_avoid_allocs = ImageDataToRGBA(Dict{Any,Any}(
-	"width" => 1, "height" => 1, 
+	"width" => 1, "height" => 1,
 	"data" => UInt8[0,0,0],
 ))
 
@@ -111,7 +108,7 @@ const css = @htl("""<style>
 		width: 300px;
 		height: 200px;
 		display: flex;
-        border: 3px dashed lightgrey; 
+        border: 3px dashed lightgrey;
 		border-radius: 2px;
 		position: relative;
 	}
@@ -142,7 +139,7 @@ const css = @htl("""<style>
     	color: black;
 		padding: .5em;
 	}
-		
+
 	plutoui-webcam .grid {
 		display: grid;
 		width: 100%;
@@ -260,7 +257,7 @@ function html(webcam)
 		<div class="permissions-help" style="visibility: hidden;">
 			<span>It looks like this page does not have permission to use the camera. <strong>Enable camera access</strong> and try again.</span>
 		</div>
-			
+
 		<canvas style="display: none"></canvas>
 		<script>
 		const parent = currentScript.parentElement
@@ -272,7 +269,7 @@ function html(webcam)
 	const capture_ctl = parent.querySelector(".controls .capture-img")
 	const select_device = parent.querySelector("select")
 	const permissionsHelp = parent.querySelector(".permissions-help")
-			
+
 	const state = {
 		initialized: false,
 		streaming: false,
@@ -284,15 +281,15 @@ function html(webcam)
 		preferredId: null
 	};
 
-		
+
 	const add_listener_clean = (element, type, f) => {
 		element.addEventListener(type, f)
-		invalidation.then(() => 
+		invalidation.then(() =>
 			element.removeEventListener(type, f)
 		 )
 	}
 
-			
+
 	const checkIfHasMedia = () => {
 		return !!(
 			navigator.mediaDevices &&
@@ -329,7 +326,7 @@ function html(webcam)
 			return [Math.round(width * ratio), Math.round(height * ratio)]
 		}
 	}
-	
+
 	const tryInitVideo = () => {
 		const constraints = {
   			video: {
@@ -340,7 +337,7 @@ function html(webcam)
 			.getUserMedia(constraints)
 			.then((stream) => {
 				permissionsHelp.style.visibility = "hidden";
-					
+
 				state.stream = stream;
 				let {width, height} = stream.getTracks()[0].getSettings();
 
@@ -348,28 +345,28 @@ function html(webcam)
 
 				canvas.width = output_width;
 				canvas.height = output_height;
-	
+
 				state.width = width
 				state.height = height;
-	
+
 				video.srcObject = stream;
-	
+
 				start_video_ctl.disabled = true;
 				start_video_large_ctl.disabled = true;
 				start_video_large_ctl.style.visibility = "hidden";
 				stop_video_ctl.disabled = false;
 				capture_ctl.disabled = false;
-	
+
 			}).catch(err => {
 				console.log(err)
 				permissionsHelp.style.visibility = null;
-				
+
 				state.stream = null;
 				state.width = 0;
-	
+
 				state.height = 0;
 				state.error = err;
-	
+
 				start_video_ctl.disabled = false;
 				stop_video_ctl.disabled = true;
 				capture_ctl.disabled = true;
@@ -413,10 +410,10 @@ function html(webcam)
 		// (very performance optimized)
 		// the img.data buffer contains R, G, B, A, R, G, B, A, ...
 		// we get rid of the A, but we reuse the buffer by shifting all the RGB values back, to avoid allocating again
-		
+
 		// R, G, B, A, R, G, B, A, R, G, B, A, ...
 		// |  |  |    /  /  /    /  /  /
-		// |  |  |   |  |  |   /  /  / 
+		// |  |  |   |  |  |   /  /  /
 		// R, G, B, R, G, B, R, G, B, ...
 
 		const data = img.data
@@ -429,19 +426,19 @@ function html(webcam)
 		}
 
 		let rgb_data_view = new Uint8ClampedArray(data.buffer, 0, Math.floor(data.length * 3 / 4))
-			
+
 		if(is_old_pluto())
 			rgb_data_view = new Uint8ClampedArray(rgb_data_view)
-		
+
 		let t2 = performance.now()
 
 		console.debug(t2-t1, " ms", is_old_pluto())
 
-					
+
 		parent.value = {width: canvas.width, height: canvas.height, data: rgb_data_view}
 		parent.dispatchEvent(new CustomEvent('input'))
 	}
-			
+
 	start_video_ctl.onclick = tryInitVideo
 	start_video_large_ctl.onclick = tryInitVideo
 	stop_video_ctl.onclick = closeCamera
@@ -461,7 +458,7 @@ function html(webcam)
 			closeCamera()
 		}
 	})
-	
+
 	getDevices()
 
 	add_listener_clean(navigator.mediaDevices, "devicechange", getDevices)
@@ -484,7 +481,7 @@ begin
 	@bind image WebcamInput(; kwargs...)
 	```
 
-	A webcam input. Provides the user with a small interface to select a camera and take a picture, the captured image is returned as a `Matrix{RGB}` via `@bind`. 
+	A webcam input. Provides the user with a small interface to select a camera and take a picture, the captured image is returned as a `Matrix{RGB}` via `@bind`.
 
 	# How to use a `Matrix{RGB}`
 
@@ -493,7 +490,7 @@ begin
 	- `RGB` (from [ColorTypes.jl](https://github.com/JuliaGraphics/ColorTypes.jl)): a `struct` with fields `r` (Red), `g` (Green) and `b` (Blue), each of type `N0f8`. These are the digital 'channel' value that make up a color.
 	- `N0f8` (from [FixedPointNumbers.jl](https://github.com/JuliaMath/FixedPointNumbers.jl)): a special type of floating point number that uses only 8 bits. Think of it as a `Float8`, rather than the usual `Float64`. You can use `Float64(x)` to convert to a normal `Float64`.
 
-	By default, a `Matrix{RGB}` will be displayed using text, but if you add 
+	By default, a `Matrix{RGB}` will be displayed using text, but if you add
 	```julia
 	import ImageShow, ImageIO
 	```
@@ -507,7 +504,7 @@ begin
 	- `default::Matrix{RGB{N0f8}}` set a default image, which is used until the user captures an image. Defaults to a **1x1 transparent image**.
 	- `max_size::Int64` when given, this constraints the largest dimension of the image, while maintaining aspect ratio. A lower value has better performance.
 	- `avoid_allocs::Bool=false` when set to `true`, we lazily convert the raw `Vector{UInt8}` camera data to a `AbstractMatrix{RGB{N0f8}}`, with zero allocations. This will lead to better performance, but the bound value will be an `AbstractMatrix`, not a `Matrix`.
-	
+
 	# Examples
 
 	```julia
@@ -530,7 +527,7 @@ begin
 	```
 
 	To get the **green** channel value of the **top right** pixel of the image:
-	
+
 	```julia
 	image[1, end].g
 	```
@@ -539,7 +536,7 @@ begin
 	end
 
 	function AbstractPlutoDingetjes.Bonds.initial_value(w::WebcamInput)
-		return w.default !== nothing ? 
+		return w.default !== nothing ?
 			w.default :
 			w.avoid_allocs ? standard_default_avoid_allocs : standard_default
 	end
