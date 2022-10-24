@@ -40,6 +40,7 @@ begin
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "ContinuumModels")),
+		Pkg.PackageSpec(name="PlutoUI"),
 	])
 	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations, ContinuumModels, LabelledArrays, CairoMakie, MakiePublication
 end
@@ -152,24 +153,40 @@ end;
 
 # ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
 begin
-	parsed, sol = try
+	if !isnothing(data)
+	parsed, p₀ = try
+		true, LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
+	catch
+		false, nothing
+	end
+	if parsed
 		ψ = getfield(Hyperelastics, Symbol(model))()
-		p₀ = LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
-		# p₀ = ComponentVector(nums, ax)
 		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
 		solution = solve(heprob, LBFGS())
-		true, NamedTuple(solution.u)
-	catch
-		false, NamedTuple()
-	end
-	if length(sol) > 0
+		sol = NamedTuple(solution.u)
 		sol
+	end
 	end
 end
 
+# ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
+if !isnothing(data)
+if parsed && !isnothing(data)
+md"""
+# Other Values
+
+Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
+
+Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
+
+"""
+end
+end
+
 # ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
-begin
-	if parsed && !isnothing(data)
+let
+	if !isnothing(data)
+	if parsed
 	ψ = getfield(Hyperelastics, Symbol(model))()
 	s⃗ = map(λ -> SecondPiolaKirchoffStressTensor(ψ, λ, sol), collect.(he_data.λ⃗))
 	s₁ = getindex.(s⃗, 1)
@@ -216,18 +233,7 @@ begin
 	f[1,1] = ax
 	f
 	end
-end
-
-# ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
-if parsed && !isnothing(data)
-md"""
-# Other Values
-
-Small Strain Shear Modulus: $(ShearModulus(ψ, sol)) $(stress_units)
-
-Small Strain Elastic Modulus: $(ElasticModulus(ψ, sol)) $(stress_units)
-
-"""
+	end
 end
 
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789

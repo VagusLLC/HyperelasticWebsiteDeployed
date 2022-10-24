@@ -46,13 +46,19 @@ using SnoopPrecompile
         p⃗_LabelledArrays = map(LVector, p⃗)
         p⃗_ComponentArrays = map(ComponentVector, p⃗)
         for (ψ, p) in zip(ψ⃗, p⃗)
-            StrainEnergyDensityFunction(ψ(), data.λ⃗[1], p)
+            StrainEnergyDensity(ψ(), data.λ⃗[1], p)
+            SecondPiolaKirchoffStressTensor(ψ(), data.λ⃗[1], p)
+            CauchyStressTensor(ψ(), data.λ⃗[1], p)
         end
         for (ψ, p) in zip(ψ⃗, p⃗_LabelledArrays)
-            StrainEnergyDensityFunction(ψ(), data.λ⃗[1], p)
+            StrainEnergyDensity(ψ(), data.λ⃗[1], p)
+            SecondPiolaKirchoffStressTensor(ψ(), data.λ⃗[1], p)
+            CauchyStressTensor(ψ(), data.λ⃗[1], p)
         end
         for (ψ, p) in zip(ψ⃗, p⃗_ComponentArrays)
-            StrainEnergyDensityFunction(ψ(), data.λ⃗[1], p)
+            StrainEnergyDensity(ψ(), data.λ⃗[1], p)
+            SecondPiolaKirchoffStressTensor(ψ(), data.λ⃗[1], p)
+            CauchyStressTensor(ψ(), data.λ⃗[1], p)
         end
     end
 end
