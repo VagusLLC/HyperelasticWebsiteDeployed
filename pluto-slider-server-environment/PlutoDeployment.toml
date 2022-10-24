@@ -1,18 +1,18 @@
 [Export]
 offer_binder = false
 exclude = [
-    "*/WebcamInput",
-    "*/TransformedValue",
-    "*/TerminalNotebook",
-    "*/TableOfContents",
-    "*/Scrubbable",
-    "*/RangeSlider",
-    "*/MultiCheckBox",
-    "*/Layout",
-    "*/Confirm",
-    "*/Combine",
-    "*/Clock",
-    "*/Builtins"
+    "*/WebcamInput.jl",
+    "*/TransformedValue.jl",
+    "*/TerminalNotebook.jl",
+    "*/TableOfContents.jl",
+    "*/Scrubbable.jl",
+    "*/RangeSlider.jl",
+    "*/MultiCheckBox.jl",
+    "*/Layout.jl",
+    "*/Confirm.jl",
+    "*/Combine.jl",
+    "*/Clock.jl",
+    "*/Builtin.jls"
 ]
 
 [SliderServer]
