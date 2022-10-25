@@ -34,7 +34,8 @@ begin
 		Pkg.PackageSpec(name="Optimization"), 
 		Pkg.PackageSpec(name="OptimizationOptimJL"),
 		Pkg.PackageSpec(name="Unitful"),
-		Pkg.PackageSpec(name="LabelledArrays")
+		Pkg.PackageSpec(name="LabelledArrays"),
+		Pkg.PackageSpec(name="HypertextLiteral"),
 	])
 	Pkg.develop([
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
@@ -68,6 +69,72 @@ md"""
 	- When selecting a phenomenological model, be aware that using higher order models may result in overfitting of the data.
 	- All moduli in models are in the defined stress units above
 """
+
+# ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
+html"""<center><h2> Set initial parameter guess</h2></center>"""
+
+# ╔═╡ f2a51df9-0396-436d-926c-587ad6e41ff4
+# ╠═╡ show_logs = false
+# begin
+# 	str = let
+# 	_str = "<span>"
+# 	columns = string.(parameters(getfield(Hyperelastics, model)()))
+# 	output_string = "{"
+# 	for column ∈ columns
+# 		output_string *= """$(column):$(column)_$(1).value,"""
+# 	end
+# 	output_string *= "make_model: make_model.checked"
+# 	output_string *= """}"""
+# ####################             HTML        ##############################
+# 	_str *= """<center><h3> Initial Parameter Guess</h3></center>"""
+# 	_str *= """<table>"""
+# 	for column ∈ columns
+# 		_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
+# 	end
+# 	_str *= """<tr>"""
+# 	for column ∈ columns
+# 		_str *= """<td><input type = "text" id = "$(column)_$(1)"></input></td>"""
+# 	end
+# 	_str *= """</tr>"""
+# 	_str *= """<tfoot><tr><td></td>"""
+# 	_str *= """<td></td></tr></tfoot>"""
+# 	_str *= """</table>"""
+# 	_str *= """<center>Fit Parameters:<input type = "checkbox" id = "make_model"</input></center>"""
+# ######################        JAVASCRIPT            ####################
+# 	_str *= """
+# 		<script>		
+# 			var span = currentScript.parentElement
+# 		"""
+# 		for column ∈ columns
+# 		_str*="""
+# 			var $(column)_$(1) = document.getElementById("$(column)_$(1)")
+		
+# 			$(column)_$(1).addEventListener("input", (e) => {
+# 				span.value = $(output_string)
+# 				span.dispatchEvent(new CustomEvent("input"))
+# 				e.preventDefault()
+# 			})
+# 		"""
+# 		end
+		
+# 	for i ∈ ["make_model"]
+# 		_str*="""
+# 			var $(i) = document.getElementById("$(i)")
+# 			$(i).addEventListener("input", (e) => {
+# 				span.value = $(output_string)
+# 				span.dispatchEvent(new CustomEvent("input"))
+# 				e.preventDefault()
+# 			})
+# 		"""
+# 	end
+# 	_str*="""
+# 		span.value = $(output_string)
+# 		</script>
+# 		</span>
+# 		"""
+# 	end
+# 	@bind ps HTML(str)
+# end
 
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
 begin
@@ -135,140 +202,97 @@ begin
 	Hyperelastics.parameters(ψ::BechirChevalier) = (:μ0, :η, :ρ, :N3, :N8)
 end
 
-# ╔═╡ f2a51df9-0396-436d-926c-587ad6e41ff4
-# ╠═╡ show_logs = false
-begin
-	str = let
-	_str = "<span>"
-	columns = string.(parameters(getfield(Hyperelastics, model)()))
-	output_string = "{"
-	for column ∈ columns
-		output_string *= """$(column):$(column)_$(1).value,"""
-	end
-	output_string *= "make_model: make_model.checked"
-	output_string *= """}"""
-####################             HTML        ##############################
-	_str *= """<center><h3> Initial Parameter Guess</h3></center>"""
-	_str *= """<table>"""
-	for column ∈ columns
-		_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
-	end
-	_str *= """<tr>"""
-	for column ∈ columns
-		_str *= """<td><input type = "text" id = "$(column)_$(1)"></input></td>"""
-	end
-	_str *= """</tr>"""
-	_str *= """<tfoot><tr><td></td>"""
-	_str *= """<td></td></tr></tfoot>"""
-	_str *= """</table>"""
-	_str *= """<center>Fit Parameters:<input type = "checkbox" id = "make_model"</input></center>"""
-######################        JAVASCRIPT            ####################
-	_str *= """
-		<script>		
-			var span = currentScript.parentElement
-		"""
-		for column ∈ columns
-		_str*="""
-			var $(column)_$(1) = document.getElementById("$(column)_$(1)")
-		
-			$(column)_$(1).addEventListener("input", (e) => {
-				span.value = $(output_string)
-				span.dispatchEvent(new CustomEvent("input"))
-				e.preventDefault()
-			})
-		"""
-		end
-		
-	for i ∈ ["make_model"]
-		_str*="""
-			var $(i) = document.getElementById("$(i)")
-			$(i).addEventListener("input", (e) => {
-				span.value = $(output_string)
-				span.dispatchEvent(new CustomEvent("input"))
-				e.preventDefault()
-			})
-		"""
-	end
-	_str*="""
-		span.value = $(output_string)
-		</script>
-		</span>
-		"""
-	end
-	@bind ps HTML(str)
-end
-
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
 function set_parameters(model)
+	ps = Hyperelastics.parameters(getfield(Hyperelastics, model)())
 	return PlutoUI.combine() do Child
 		inputs = [
-			md"""$(string(model)*" "*string(p)) $(Child(string(p), TextField()))"""
-			for p in Hyperelastics.parameters(getfield(Hyperelastics, model)())
+			md"""$(string(p)) $(Child(string(p), TextField()))"""
+			for p in ps
 		]
 		md"""
-		### Set initial parameter guess
 		$(inputs)
+		Fit Model: $(@bind fit_model CheckBox())
 		"""
 	end
 end;
 
+# ╔═╡ 703091d0-bf33-4baf-b75e-43e01b42ec0b
+@bind ps set_parameters(model)
+
 # ╔═╡ d58bc6f1-a819-4d8b-8817-a742e93e8a7f
+# begin
+# 	parsed = false
+# 	p₀ = LVector()
+# 	if !isnothing(data) && !isnothing(ps)
+# 		if ps["make_model"]
+# 			ψ = getfield(Hyperelastics, Symbol(model))()
+# 			fields = string.(parameters(ψ))
+# 			vals = getindex.((ps,), fields)
+# 		end
+#   	parsed, p₀ = try
+# 		true, LVector(NamedTuple(Symbol.(fields) .=> parse.(Float64, vals)))
+# 	catch
+# 		false, nothing
+# 	end
+# 	if parsed
+# 		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
+# 		solution = solve(heprob, LBFGS())
+# 		sol = NamedTuple(solution.u)
+# 		sol
+# 	end
+# 	end
+# 	nothing
+# end
+
+# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
 begin
-	parsed = false
-	p₀ = LVector()
-	if !isnothing(data) && !isnothing(ps)
-		if ps["make_model"]
-			ψ = getfield(Hyperelastics, Symbol(model))()
-			fields = string.(parameters(ψ))
-			vals = getindex.((ps,), fields)
+	if !isnothing(data)
+		parsed, p₀ = try
+				true, LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
+			catch
+				false, nothing
 		end
-  	parsed, p₀ = try
-		true, LVector(NamedTuple(Symbol.(fields) .=> parse.(Float64, vals)))
-	catch
-		false, nothing
+		if parsed && fit_model
+			ψ = getfield(Hyperelastics, Symbol(model))()
+			heprob = HyperelasticProblem(he_data, ψ, p₀, [])
+			solution = solve(heprob, LBFGS())
+			sol = NamedTuple(solution.u)
+			sol
+		end
 	end
-	if parsed
-		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
-		solution = solve(heprob, LBFGS())
-		sol = NamedTuple(solution.u)
-		sol
-	end
-	end
-	nothing
-end
+end;
 
 # ╔═╡ 0fa152b1-462a-4f34-9753-13ef6ef63071
 begin
-		if !isnothing(data) && !isnothing(ps)
-		if ps["make_model"]
-	str_table = let
-		_str = "<span>"
-		columns = string.(parameters(getfield(Hyperelastics, model)()))
-	####################             HTML        ##############################
-		_str *= """<center><h3> Final Parameters</h3></center>"""
-		_str *= """<table>"""
-		for column ∈ columns
-			_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
-		end
-		_str *= """<tr>"""
-		for column ∈ columns
-			_str *= """<td>$(round(getfield(sol, Symbol(column)), sigdigits = 6))</input></td>"""
-		end
-		_str *= """</tr>"""
-		_str *= """<tfoot><tr><td></td>"""
-		_str *= """<td></td></tr></tfoot>"""
-		_str *= """</table>"""
-		_str *= """</span>"""
-	end
-	HTML(str_table)
-		end
+	if !isnothing(data) && !isnothing(ps) && parsed && fit_model
+		str_table = let
+			_str = "<span>"
+			columns = string.(parameters(getfield(Hyperelastics, model)()))
+			####################             HTML        ##########################
+			_str *= """<center><h3> Final Parameters</h3></center>"""
+			_str *= """<table>"""
+			for column ∈ columns
+				_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
+			end
+			_str *= """<tr>"""
+			for column ∈ columns
+				_str *= """<td>$(round(getfield(sol, Symbol(column)), sigdigits = 6))</input></td>"""
+			end
+			_str *= """</tr>"""
+			_str *= """<tfoot><tr><td></td>"""
+			_str *= """<td></td></tr></tfoot>"""
+			_str *= """</table>"""
+			_str *= """</span>"""
+			end
+		HTML(str_table)
 		end
 end
 
 # ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
 let
-	if !isnothing(data)
-	if parsed
+	if !isnothing(data) 
+	if parsed && fit_model
 	ψ = getfield(Hyperelastics, Symbol(model))()
 	s⃗ = map(λ -> SecondPiolaKirchoffStressTensor(ψ, λ, sol), collect.(he_data.λ⃗))
 	s₁ = getindex.(s⃗, 1)
@@ -319,7 +343,7 @@ let
 end
 
 # ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
-if !isnothing(data)
+if !isnothing(data) && fit_model
 if parsed && !isnothing(data)
 	HTML("""
 	<center><h2> Other Values </h2></center>
@@ -330,24 +354,6 @@ if parsed && !isnothing(data)
 	""")
 end
 end
-
-# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
-# begin
-# 	if !isnothing(data)
-# 	parsed, p₀ = try
-# 		true, LVector(NamedTuple(keys(ps) .=> parse.(Float64, values(ps))))
-# 	catch
-# 		false, nothing
-# 	end
-# 	if parsed
-# 		ψ = getfield(Hyperelastics, Symbol(model))()
-# 		heprob = HyperelasticProblem(he_data, ψ, p₀, [])
-# 		solution = solve(heprob, LBFGS())
-# 		sol = NamedTuple(solution.u)
-# 		sol
-# 	end
-# 	end
-# end
 
 # ╔═╡ fa546bd7-aaca-4dfb-ac03-72aa515c5343
 # @bind ps confirm(set_parameters(model))
@@ -378,6 +384,8 @@ end
 # ╟─d0319d95-f335-48fa-b789-59daf9a0f1a4
 # ╟─9343a51e-5002-4489-a55f-12c49f5b8cf3
 # ╟─2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
+# ╟─c6e726ab-ea78-4129-a662-338976633cd5
+# ╟─703091d0-bf33-4baf-b75e-43e01b42ec0b
 # ╟─f2a51df9-0396-436d-926c-587ad6e41ff4
 # ╟─0fa152b1-462a-4f34-9753-13ef6ef63071
 # ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
