@@ -1,6 +1,6 @@
 [Export]
 offer_binder = false
-slider_server_url = "http://174.138.58.151:443/"
+# slider_server_url = "http://174.138.58.151:443/"
 exclude = [
     "PlutoUI/src/Builtins.jl",
     "PlutoUI/src/Clock.jl",
@@ -23,6 +23,6 @@ exclude = [
 ]
 
 [SliderServer]
-port = 443
+port = 2345
 host = "0.0.0.0"
 # serve_static_export_folder = false
