@@ -41,6 +41,7 @@ begin
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
+		Pkg.PackageSpec(path=joinpath(local_dir, "NonlinearContinua")),
 	])
 	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication
 end
