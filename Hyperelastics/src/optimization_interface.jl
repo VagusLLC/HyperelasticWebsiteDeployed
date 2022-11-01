@@ -51,14 +51,12 @@ function HyperelasticProblem(
     prob = OptimizationProblem(func, u₀, ps)
     # Check for Constraints
     if !isnothing(cons)
-        # println("Has Constraints")
         num_cons = length(cons(u₀, ps))
         func = OptimizationFunction(f, ad, cons=cons)
         prob = OptimizationProblem(func, u₀, ps, lcons=zeros(num_cons))
     end
     # Check for Bounds
     if !isnothing(lb) || !isnothing(ub)
-        # println("Has Bounds")
         ax = Axis(Hyperelastics.parameters(ψ))
         if !isnothing(lb) && !isnothing(ub)
             lb = LVector(lb)

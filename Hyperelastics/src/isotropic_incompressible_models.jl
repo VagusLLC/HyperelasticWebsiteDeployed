@@ -1797,18 +1797,6 @@ function NonlinearContinua.StrainEnergyDensity(ψ::ArrudaBoyce, λ⃗::AbstractV
     μ * N * (rchain_Nl * β + log(β / sinh(β)))
 end
 
-# function true_stress(ψ::ArrudaBoyce, λ⃗, (; μ, N))
-#     λch = sqrt(I₁(λ⃗)/3)
-#     @tullio σ[i] := μ * √(N) * (λ⃗[i]^2 - λch^2)/(λch)*ψ.ℒinv(λch/sqrt(N))
-#     return σ
-# end
-
-# function NonlinearContinua.StrainEnergyDensity(ψ::ArrudaBoyce, I⃗::AbstractVector, (; μ, N), I::InvariantForm)
-#     rchain_Nl = √(I⃗[1] / 3 / N)
-#     β = ψ.ℒinv(rchain_Nl)
-#     μ * N * (rchain_Nl * β + log(β / sinh(β)))
-# end
-
 function parameters(ψ::ArrudaBoyce)
     return (:μ, :N)
 end
@@ -1822,6 +1810,10 @@ function parameter_bounds(ψ::ArrudaBoyce, data::AbstractHyperelasticData)
     return (lb=lb, ub=ub)
 end
 
+function Base.show(io::IO, ψ::ArrudaBoyce)
+    println(io, "Arruda-Boyce")
+    println(io, "\t Inverse Langevin = ", ψ.ℒinv)
+end
 """
 Modified Flory Erman [^1]
 
