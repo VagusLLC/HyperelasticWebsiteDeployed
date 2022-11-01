@@ -233,7 +233,7 @@ let
 			getindex.(he_data.λ⃗, 1), 
 			Δs₁₃, 
 			color = MakiePublication.seaborn_muted()[2],
-			label = split(split(string(ψ), ".")[2], "(")[1]
+			label = string(ψ)# split(split(string(ψ), ".")[2], "(")[1]
 		)
 		axislegend(ax, [[l1], [s1]], [split(split(string(ψ), ".")[2], "(")[1], "Experimental"], position = :lt, nbanks = 2)
 		f[1,1] = ax
