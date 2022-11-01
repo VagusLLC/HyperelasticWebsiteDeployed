@@ -235,7 +235,7 @@ let
 			color = MakiePublication.seaborn_muted()[2],
 			label = string(ψ)# split(split(string(ψ), ".")[2], "(")[1]
 		)
-		axislegend(ax, [[l1], [s1]], [split(split(string(ψ), ".")[2], "(")[1], "Experimental"], position = :lt, nbanks = 2)
+		axislegend(ax, [[l1], [s1]], [split(string(typeof(ψ)), ".")[2], "Experimental"], position = :lt, nbanks = 2)
 		f[1,1] = ax
 		f
 		end
@@ -287,7 +287,7 @@ end;
 # ╟─703091d0-bf33-4baf-b75e-43e01b42ec0b
 # ╟─1018d35f-42e9-4970-8a5f-f5cc6e951cbc
 # ╟─0fa152b1-462a-4f34-9753-13ef6ef63071
-# ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
+# ╠═1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
