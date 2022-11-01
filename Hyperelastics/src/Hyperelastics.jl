@@ -2,9 +2,10 @@ module Hyperelastics
 
 using Reexport
 using InverseLangevinApproximations
-@reexport using ContinuumModels
+@reexport using NonlinearContinua
 using LossFunctions, Optimization
-using AbstractDifferentiation, ForwardDiff
+using AbstractDifferentiation
+using ForwardDiff
 using Tullio
 using SpecialFunctions
 using DataInterpolations
@@ -16,7 +17,7 @@ export UniaxialHyperelasticData, BiaxialHyperelasticData, HyperelasticProblem
 export citation, parameters, parameter_bounds
 
 abstract type AbstractHyperelasticData end
-abstract type AbstractHyperelasticModel <: ContinuumModels.AbstractMaterialModel end
+abstract type AbstractHyperelasticModel <: NonlinearContinua.AbstractMaterialModel end
 abstract type AbstractDataDrivenHyperelasticModel <: AbstractHyperelasticModel end
 abstract type AbstractHyperelasticProblem end
 
@@ -33,8 +34,7 @@ include("macro_micro_macro_model.jl")
 include("average_chain_behavior.jl")
 include("optimization_interface.jl")
 
-using SnoopPrecompile
-
+# using SnoopPrecompile
 # @precompile_setup begin
 #     λ₁ = 2.0
 #     data = UniaxialHyperelasticData([0.0], [λ₁])
@@ -76,23 +76,20 @@ using SnoopPrecompile
 #         if ψ⃗[i] == Hyperelastics.VanDerWaals
 #             p⃗[i] = (μ=10.0, λm=2 * sqrt(3), β=0.9, α=10.0)
 #         end
+#         if ψ⃗[i] == Hyperelastics.EdwardVilgis
+#             p⃗[i] = (Ns=20, Nc=20, α=0.01, η=0.05)
+#         end
 #         @precompile_all_calls begin
 #             p⃗_LabelledArrays = map(LVector, p⃗)
 #             p⃗_ComponentArrays = map(ComponentVector, p⃗)
 #             for (ψ, p) in zip(ψ⃗, p⃗)
 #                 StrainEnergyDensity(ψ(), data.λ⃗[1], p)
-#                 SecondPiolaKirchoffStressTensor(ψ(), data.λ⃗[1], p)
-#                 CauchyStressTensor(ψ(), data.λ⃗[1], p)
 #             end
 #             for (ψ, p) in zip(ψ⃗, p⃗_LabelledArrays)
 #                 StrainEnergyDensity(ψ(), data.λ⃗[1], p)
-#                 SecondPiolaKirchoffStressTensor(ψ(), data.λ⃗[1], p)
-#                 CauchyStressTensor(ψ(), data.λ⃗[1], p)
 #             end
 #             for (ψ, p) in zip(ψ⃗, p⃗_ComponentArrays)
 #                 StrainEnergyDensity(ψ(), data.λ⃗[1], p)
-#                 SecondPiolaKirchoffStressTensor(ψ(), data.λ⃗[1], p)
-#                 CauchyStressTensor(ψ(), data.λ⃗[1], p)
 #             end
 #         end
 #     end
