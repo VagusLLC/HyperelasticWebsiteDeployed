@@ -212,6 +212,7 @@ end
 let
 	if !isnothing(data)
 		if parsed && fit_model
+			if @isdefined sol
 		ψ = getfield(Hyperelastics, Symbol(model))()
 		s⃗ = map(λ -> SecondPiolaKirchoffStressTensor(ψ, λ, sol), collect.(he_data.λ⃗))
 		s₁ = getindex.(s⃗, 1)
@@ -237,6 +238,7 @@ let
 		axislegend(ax, [[l1], [s1]], [split(split(string(ψ), ".")[2], "(")[1], "Experimental"], position = :lt, nbanks = 2)
 		f[1,1] = ax
 		f
+		end
 		end
 	end
 end
