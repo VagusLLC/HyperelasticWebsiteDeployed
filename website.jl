@@ -57,6 +57,11 @@ HTML("""<center><h1>Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
 		<center><h2>Upload Uniaxial Test Data</h2></center>
 		""")
 
+# ╔═╡ 692b1d0d-2353-4931-b289-490f74988811
+md"""
+Test Type: $(@bind test_type Select([:Uniaxial, :Biaxial]))
+"""
+
 # ╔═╡ 6434a755-90be-45f8-8e1e-cdeba4be244b
 @bind data FilePicker()
 
@@ -81,6 +86,9 @@ md"""
 Optimizer: $(@bind optimizer Select([:LBFGS, :NelderMead])) - *Only change if you are having issues with parameters converging*
 """
 
+# ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
+md"---"
+
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
 set_theme!(MakiePublication.theme_web(width = 1000))
 
@@ -100,33 +108,72 @@ end;
 
 # ╔═╡ 69068002-ca3a-4e19-9562-6736d3b15dea
 if !isnothing(data)
+	if test_type == :Uniaxial
 md"""
 Stress Column: $(@bind stress_column Select(names(df)))
 
 Stretch Column: $(@bind stretch_column Select(names(df)))
 
 Stress Units: $(@bind stress_units TextField())
+			df[!, stress1_column], 
 
 Test Name: $(@bind test_name TextField())
 """
+	elseif test_type == :Biaxial
+md"""
+Stress-1 Column: $(@bind stress1_column Select(names(df)))
+
+Stress-2 Column: $(@bind stress2_column Select(names(df)))
+
+Stretch-1 Column: $(@bind stretch1_column Select(names(df)))
+
+Stretch-2 Column: $(@bind stretch2_column Select(names(df)))
+
+Stress Units: $(@bind stress_units TextField())
+
+Test Name: $(@bind test_name TextField())
+"""	
+	end
 end
 
 # ╔═╡ 2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 if !isnothing(data)
+	if test_type == :Uniaxial
 	f, ax, p = scatter(
 		df[!, stretch_column], 
 		df[!, stress_column],
-		name="Experimental",
 		axis = (xlabel = "Stretch", ylabel = "Stress [$stress_units]"),
 		label = test_name*" - Experimental"
 	)
+	elseif test_type == :Biaxial
+	f, ax, p = scatter(
+		df[!, stretch1_column], 
+		df[!, stress1_column],
+		axis = (xlabel = "Stretch", ylabel = "Stress [$stress_units]"),
+		label = test_name*" - Experimental - 1"
+	)
+	scatter!(
+		df[!, stretch2_column],
+		df[!, stress2_column],
+		label = test_name * " - Experimental - 2"
+	)
+	end
 	axislegend(position = :lt)
 	f
 end
 
 # ╔═╡ 12256359-1dca-4a71-a225-66994e2dfd66
 if !isnothing(data)
-	he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = test_name);
+	if test_type == :Uniaxial
+		he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = test_name);
+	elseif test_type == :Biaxial
+		he_data = HyperelasticBiaxialTest(
+			df[!, stretch1_column],
+			df[!, stretch2_column],
+			df[!, stress1_column],
+			df[!, stress2_column], 
+			name = test_name);
+	end
 end;
 
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
@@ -229,24 +276,64 @@ let
 			if @isdefined sol
 		ψ = getfield(Hyperelastics, Symbol(model))()
 		ŷ = predict(ψ, he_data, sol)
-		Δs₁₃ = getindex.(ŷ.data.s)
-		λ₁ = getindex.(ŷ.data.λ, 1)
-		s₁ = getindex.(he_data.data.s, 1)
-		f = Figure()
-		ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress [$stress_units]")
-		s1 = scatter!(
-			ax,
-			λ₁,s₁,
-		)
-		l1 = lines!(
-			ax,
-			λ₁,
-			Δs₁₃, 
-			color = MakiePublication.seaborn_muted()[2],
-		)
-		axislegend(ax, [[s1], [l1]], [test_name*" - Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
-		f[1,1] = ax
-		f
+		if test_type == :Uniaxial
+			Δs₁₃ = getindex.(ŷ.data.s, 1)
+			λ₁ = getindex.(ŷ.data.λ, 1)
+			s₁ = getindex.(he_data.data.s, 1)
+			f = Figure()
+			ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress [$stress_units]")
+			s1 = scatter!(
+				ax,
+				λ₁,s₁,
+			)
+			l1 = lines!(
+				ax,
+				λ₁,
+				Δs₁₃, 
+				color = MakiePublication.seaborn_muted()[2],
+			)
+			axislegend(ax, [[s1], [l1]], [test_name*" - Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
+			f[1,1] = ax
+			f
+		elseif test_type == :Biaxial
+			Δs₁₃ = getindex.(ŷ.data.s, 1)
+			Δs₂₃ = getindex.(ŷ.data.s, 2)
+			λ₁ = getindex.(ŷ.data.λ, 1)
+			λ₂ = getindex.(ŷ.data.λ, 2)
+			s₁ = getindex.(he_data.data.s, 1)
+			s₂ = getindex.(he_data.data.s, 2)
+			f = Figure()
+			ax = CairoMakie.Axis(f,xlabel = "Stretch", ylabel = "Stress [$stress_units]")
+			s1 = scatter!(
+				ax,
+				λ₁,s₁,
+			)
+			s2 = scatter!(
+				ax,
+				λ₂,s₂,
+			)
+			l1 = lines!(
+				ax,
+				λ₁,
+				Δs₁₃, 
+				color = MakiePublication.seaborn_muted()[2],
+			)
+			l2 = lines!(
+				ax,
+				λ₂,
+				Δs₂₃, 
+				color = MakiePublication.seaborn_muted()[2],
+			)
+			axislegend(ax, [[s1], [s2], [l1], [l2]], [
+				test_name*" - Experimental - 1", 
+				test_name*" - Experimental - 2", 
+				split(string(typeof(ψ)), ".")[2]*" - 1",
+				split(string(typeof(ψ)), ".")[2]*" - 2",
+			], position = :lt)
+			f[1,1] = ax
+			f
+		end
+
 		end
 		end
 	end
@@ -285,6 +372,7 @@ end;
 # ╔═╡ Cell order:
 # ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
+# ╟─692b1d0d-2353-4931-b289-490f74988811
 # ╟─6434a755-90be-45f8-8e1e-cdeba4be244b
 # ╟─69068002-ca3a-4e19-9562-6736d3b15dea
 # ╟─f12538a9-f595-4fae-b76c-078179bc5109
@@ -299,6 +387,7 @@ end;
 # ╟─0fa152b1-462a-4f34-9753-13ef6ef63071
 # ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
+# ╟─7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
 # ╟─2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
