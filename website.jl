@@ -39,12 +39,15 @@ begin
 	])
 	Pkg.develop([
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
+		Pkg.PackageSpec(path=joinpath(local_dir, "NonlinearContinua")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
-		Pkg.PackageSpec(path=joinpath(local_dir, "NonlinearContinua")),
 	])
-	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, Hyperelastics, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication
+	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication
 end
+
+# ╔═╡ 2d189645-189f-4886-a6d5-5718a613798f
+using Hyperelastics
 
 # ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 TableOfContents()
@@ -73,6 +76,11 @@ md"""
 # ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
 html"""<center><h2> Set initial parameter guess</h2></center>"""
 
+# ╔═╡ 08d775f2-94fc-4ca8-bcdd-e9535cfd129a
+md"""
+Optimizer: $(@bind optimizer Select([:LBFGS, :NelderMead])) - *Only change if you are having issues with parameters converging*
+"""
+
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
 set_theme!(MakiePublication.theme_web(width = 1000))
 
@@ -98,22 +106,27 @@ Stress Column: $(@bind stress_column Select(names(df)))
 Stretch Column: $(@bind stretch_column Select(names(df)))
 
 Stress Units: $(@bind stress_units TextField())
+
+Test Name: $(@bind test_name TextField())
 """
 end
 
 # ╔═╡ 2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 if !isnothing(data)
-	scatter(
+	f, ax, p = scatter(
 		df[!, stretch_column], 
 		df[!, stress_column],
 		name="Experimental",
-		axis = (xlabel = "Stretch", ylabel = "Stress [$stress_units]")
+		axis = (xlabel = "Stretch", ylabel = "Stress [$stress_units]"),
+		label = test_name*" - Experimental"
 	)
+	axislegend(position = :lt)
+	f
 end
 
 # ╔═╡ 12256359-1dca-4a71-a225-66994e2dfd66
 if !isnothing(data)
-	he_data = UniaxialHyperelasticData(df[!, stress_column], df[!, stretch_column]);
+	he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = test_name);
 end;
 
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
@@ -171,8 +184,9 @@ begin
 	if !isnothing(data)
 		if parsed && fit_model
 			ψ = getfield(Hyperelastics, Symbol(model))()
-			heprob = HyperelasticProblem(he_data, ψ, p₀, [])
-			solution = solve(heprob, LBFGS())
+			heprob = HyperelasticProblem(ψ, he_data, p₀)
+			opt = getfield(OptimizationOptimJL, optimizer)()
+			solution = solve(heprob, opt)
 			sol = NamedTuple(solution.u)
 		end
 	end
@@ -214,28 +228,23 @@ let
 		if parsed && fit_model
 			if @isdefined sol
 		ψ = getfield(Hyperelastics, Symbol(model))()
-		s⃗ = map(λ -> SecondPiolaKirchoffStressTensor(ψ, λ, sol), collect.(he_data.λ⃗))
-		s₁ = getindex.(s⃗, 1)
-		s₃ = getindex.(s⃗, 3)
-		λ₁ = getindex.(he_data.λ⃗, 1)
-		λ₃ = getindex.(he_data.λ⃗, 3)
-		Δs₁₃ = s₁.-s₃.*λ₃./λ₁
+		ŷ = predict(ψ, he_data, sol)
+		Δs₁₃ = getindex.(ŷ.data.s)
+		λ₁ = getindex.(ŷ.data.λ, 1)
+		s₁ = getindex.(he_data.data.s, 1)
 		f = Figure()
 		ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress [$stress_units]")
 		s1 = scatter!(
 			ax,
-			getindex.(he_data.λ⃗, 1), 
-			getindex.(he_data.s⃗, 1),
-			label = "Experimental"
+			λ₁,s₁,
 		)
 		l1 = lines!(
 			ax,
-			getindex.(he_data.λ⃗, 1), 
+			λ₁,
 			Δs₁₃, 
 			color = MakiePublication.seaborn_muted()[2],
-			label = string(ψ)# split(split(string(ψ), ".")[2], "(")[1]
 		)
-		axislegend(ax, [[l1], [s1]], [split(string(typeof(ψ)), ".")[2], "Experimental"], position = :lt, nbanks = 2)
+		axislegend(ax, [[s1], [l1]], [test_name*" - Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
 		f[1,1] = ax
 		f
 		end
@@ -285,11 +294,13 @@ end;
 # ╟─2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
 # ╟─c6e726ab-ea78-4129-a662-338976633cd5
 # ╟─703091d0-bf33-4baf-b75e-43e01b42ec0b
+# ╟─08d775f2-94fc-4ca8-bcdd-e9535cfd129a
 # ╟─1018d35f-42e9-4970-8a5f-f5cc6e951cbc
 # ╟─0fa152b1-462a-4f34-9753-13ef6ef63071
-# ╠═1345476c-ee08-4233-8506-0ebc94a2bec5
+# ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
+# ╟─2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
 # ╟─e0e7407d-fe60-4583-8060-3ba38c22c409
 # ╟─7998136a-de3d-42f9-9028-1172415c8b75
