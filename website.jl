@@ -83,7 +83,7 @@ html"""<center><h2> Set initial parameter guess</h2></center>"""
 
 # ╔═╡ 08d775f2-94fc-4ca8-bcdd-e9535cfd129a
 md"""
-Optimizer: $(@bind optimizer Select([:LBFGS, :NelderMead])) - *Only change if you are having issues with parameters converging*
+Optimizer: $(@bind optimizer Select([:LBFGS, :BFGS, :NelderMead])) - *If parameters are not converging, try using a different optimizer or changing your initial guess*
 """
 
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
@@ -92,10 +92,14 @@ md"---"
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
 set_theme!(MakiePublication.theme_web(width = 1000))
 
+# ╔═╡ 6f061996-be32-493d-80e2-daedec8bb103
+exclude = [:AffineMicroSphere, :Beda, :HorganMurphy, :HorganSaccomandi, :KhiemItskov, :LinearElastic, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin, :MCC, :NonaffineMicroSphere, :Shariff];
+
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
 begin
 	hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: DataType,names(Hyperelastics))
 	hyperelastic_models = filter(x -> !(getfield(Hyperelastics, x) <: Hyperelastics.AbstractDataDrivenHyperelasticModel) && (getfield(Hyperelastics, x) <: Hyperelastics.AbstractHyperelasticModel), hyperelastic_models)
+	hyperelastic_models = filter(x -> !(x in exclude), hyperelastic_models)
 end;
 
 # ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
@@ -115,7 +119,6 @@ Stress Column: $(@bind stress_column Select(names(df)))
 Stretch Column: $(@bind stretch_column Select(names(df)))
 
 Stress Units: $(@bind stress_units TextField())
-			df[!, stress1_column], 
 
 Test Name: $(@bind test_name TextField())
 """
@@ -191,6 +194,7 @@ function set_parameters(model,data)
 	else 
 		ub = Dict(pairs(bounds.ub))
 	end
+	
 	return PlutoUI.combine() do Child
 		inputs = [
 			md"""$(string(p)) [ $(round(lb[p], digits = 3)) to $(round(ub[p], digits = 3)) ] $(Child(string(p), TextField()))"""
@@ -198,7 +202,7 @@ function set_parameters(model,data)
 		]
 		md"""
 		$(inputs)
-		Fit Model: $(@bind fit_model CheckBox())
+		Fit Model: $(@bind fit_model CheckBox(default = false))
 		"""
 	end
 end;
@@ -316,13 +320,13 @@ let
 				ax,
 				λ₁,
 				Δs₁₃, 
-				color = MakiePublication.seaborn_muted()[2],
+				# color = MakiePublication.seaborn_muted()[2],
 			)
 			l2 = lines!(
 				ax,
 				λ₂,
 				Δs₂₃, 
-				color = MakiePublication.seaborn_muted()[2],
+				# color = MakiePublication.seaborn_muted()[2],
 			)
 			axislegend(ax, [[s1], [s2], [l1], [l2]], [
 				test_name*" - Experimental - 1", 
@@ -391,6 +395,7 @@ end;
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
 # ╟─2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
+# ╟─6f061996-be32-493d-80e2-daedec8bb103
 # ╟─e0e7407d-fe60-4583-8060-3ba38c22c409
 # ╟─7998136a-de3d-42f9-9028-1172415c8b75
 # ╟─12256359-1dca-4a71-a225-66994e2dfd66

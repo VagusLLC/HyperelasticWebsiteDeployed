@@ -1,9 +1,8 @@
 # # Package Imports
 using Hyperelastics
-using IntervalArithmetic, IntervalOptimisation, LossFunctions
 using Optimization, OptimizationOptimJL, ComponentArrays
-using DataInterpolations
 using CairoMakie, ColorSchemes
+using FiniteDifferences, AbstractDifferentiation
 # # Treloar's UnPiaxial Data
 s₁ = [0.0, 0.2856, 0.3833, 0.4658, 0.5935, 0.6609, 0.8409, 1.006, 1.2087, 1.5617, 1.915, 2.2985, 2.6519, 3.0205, 3.3816, 3.7351, 4.0812, 4.4501, 4.8414, 5.2026, 5.5639]
 λ₁ = [1.0, 1.4273, 1.6163, 1.882, 2.1596, 2.4383, 3.0585, 3.6153, 4.1206, 4.852, 5.4053, 5.7925, 6.1803, 6.4787, 6.6627, 6.936, 7.133, 7.1769, 7.2712, 7.4425, 7.512]
@@ -129,6 +128,17 @@ lines!(
 )
 save("examples/" * string(ψ)[1:end-2] * ".png", current_figure()) #src
 # ![Neohookean Plot](../examples/NeoHookean.png)
+# ## Alexander
+ψ = HorganSaccomandi()
+p₀ = ComponentVector(
+    μ=0.2, J=80.0
+    )
+HEProblem = HyperelasticProblem(
+    ψ,
+    data,
+    p₀,
+)
+sol = solve(HEProblem, LBFGS(), show_trace = true)
 # ## Sussman-Bathe Model
 # $W(\vec{\lambda}) = \sum\limits_{i=1}^{3} w(\lambda_i)$
 ψ = SussmanBathe(data, 5, DataInterpolations.QuadraticSpline)
