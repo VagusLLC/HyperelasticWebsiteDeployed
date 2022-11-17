@@ -100,6 +100,7 @@ begin
 	hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: DataType,names(Hyperelastics))
 	hyperelastic_models = filter(x -> !(getfield(Hyperelastics, x) <: Hyperelastics.AbstractDataDrivenHyperelasticModel) && (getfield(Hyperelastics, x) <: Hyperelastics.AbstractHyperelasticModel), hyperelastic_models)
 	hyperelastic_models = filter(x -> !(x in exclude), hyperelastic_models)
+	map(model->parameters(model()), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models))
 end;
 
 # ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
@@ -177,6 +178,7 @@ if !isnothing(data)
 			df[!, stress2_column], 
 			name = test_name);
 	end
+	map(model->Hyperelastics.parameter_bounds(model(), he_data), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models))
 end;
 
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
