@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.14
+# v0.19.15
 
 using Markdown
 using InteractiveUtils
@@ -93,7 +93,7 @@ md"---"
 set_theme!(MakiePublication.theme_web(width = 1000))
 
 # ╔═╡ 6f061996-be32-493d-80e2-daedec8bb103
-exclude = [:AffineMicroSphere, :Beda, :HorganMurphy, :HorganSaccomandi, :KhiemItskov, :LinearElastic, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin, :MCC, :NonaffineMicroSphere, :Shariff];
+exclude = [:Beda, :HorganMurphy, :HorganSaccomandi, :KhiemItskov, :LinearElastic, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin, :MCC, :Shariff];
 
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
 begin

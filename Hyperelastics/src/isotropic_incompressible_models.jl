@@ -1971,7 +1971,7 @@ Model: See Paper
 """
 struct NonaffineMicroSphere <: AbstractHyperelasticModel
     ℒinv::Function
-    NonaffineMicroSphere(; ℒinv::Function=TreloarApproximation) = new(ℒinv)
+    NonaffineMicroSphere(; ℒinv::Function=CohenRounded3_2) = new(ℒinv)
 end
 
 function NonlinearContinua.StrainEnergyDensity(ψ::NonaffineMicroSphere, λ⃗::AbstractVector, (; μ, N, p, U, q))
@@ -2006,16 +2006,15 @@ function NonlinearContinua.StrainEnergyDensity(ψ::NonaffineMicroSphere, λ⃗::
     w3 = 0.0250712367487
 
     w = 2 .* [fill(w1, 3); fill(w2, 6); fill(w3, 12)] # Multiply by two since integration is over the half-sphere
-    F = diagm(λ⃗)
-    @tullio t⃗[i] := F * r⃗[i]
-    @tullio n⃗[i] := inv(F') * r⃗[i]
-    @tullio λ̄[i] := norm(t⃗[i])
-    @tullio ν̄[i] := norm(n⃗[i])
-    @tullio λ := (λ̄[i]^p) * w[i]# |> Base.Fix2(^, (1 / p))
+
+    @tullio λ  := sqrt(sum(λ⃗.^2 .*r⃗[i].^2))^p*w[i]
     λr = λ^(1 / p) / √N
     β = ψ.ℒinv(λr)
-    @tullio ν := ν̄[i]^q * w[i]# |> Base.Fix2(^, 1 / q)
-    return N * U * μ * ν^(1 / q) + N * μ * (λr * β + log(β / sinh(β)))
+    ψf = μ * N * (λr * β + log(β / sinh(β)))
+
+    @tullio ν := sqrt(sum(λ⃗.^-2 .*r⃗[i].^2))^q*w[i]
+    ψc = U * μ * N * (ν)
+    return ψf + ψc
 end
 
 function parameters(ψ::NonaffineMicroSphere)
@@ -2046,7 +2045,7 @@ struct AffineMicroSphere <: AbstractHyperelasticModel
     AffineMicroSphere(; ℒinv::Function=TreloarApproximation) = new(ℒinv)
 end
 
-function NonlinearContinua.StrainEnergyDensity(ψ::AffineMicroSphere, λ⃗::AbstractVector, (; μ, N, p, U, q))
+function NonlinearContinua.StrainEnergyDensity(ψ::AffineMicroSphere, λ⃗::AbstractVector, (; μ, N))
     a = √(2) / 2
     b = 0.836095596749
     c = 0.387907304067
@@ -2073,22 +2072,20 @@ function NonlinearContinua.StrainEnergyDensity(ψ::AffineMicroSphere, λ⃗::Abs
         [c, -c, b],
         [-c, -c, b],
     ]
-    w1 = 0.0265214244093
+    w1 = 0.02652142440932
     w2 = 0.0199301476312
     w3 = 0.0250712367487
 
     w = 2 .* [fill(w1, 3); fill(w2, 6); fill(w3, 12)] # Multiply by two since integration is over the half-sphere
 
-    F = diagm(λ⃗)
-    @tullio t⃗[i] := F * r⃗[i]
-    @tullio n⃗[i] := inv(F') * r⃗[i]
-    @tullio λ̄[i] := norm(t⃗[i])
-    @tullio ν̄[i] := norm(n⃗[i])
-    @tullio λ := (λ̄[i]) * w[i]# |> Base.Fix2(^, (1 / p))
-    λr = λ^(1 / p) / √N
-    β = ψ.ℒinv(λr)
-    @tullio ν := ν̄[i]^q * w[i]# |> Base.Fix2(^, 1 / q)
-    return N * U * μ * ν^(1 / q) + N * μ * (λr * β + log(β / sinh(β)))
+    @tullio λr[i] := sqrt(sum(λ⃗ .^ 2 .* r⃗[i] .^ 2))/ √N
+    # λr = λ
+    @tullio β[i] := ψ.ℒinv(λr[i])
+    @tullio ψf := μ * N * (λr[i] * β[i] + log(β[i] / sinh(β[i]))) * w[i]
+
+    # @tullio ν := sqrt(sum(λ⃗ .^ -2 .* r⃗[i] .^ 2))
+    # @tullio ψc := U * μ * N * ν * w[i]
+    return ψf #+ ψc
 end
 
 function parameters(ψ::AffineMicroSphere)
