@@ -57,7 +57,7 @@ jobs:
                     Export_cache_dir="pluto_state_cache",
                     Export_baked_notebookfile=false,
                     Export_baked_state=false,
-                    Export_slider_server_url = "http://174.138.58.151:443/",
+                    Export_slider_server_url = "https://carsonfarmer.me",
                     # more parameters can go here
                   )'
 
