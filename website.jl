@@ -32,12 +32,13 @@ begin
 		Pkg.PackageSpec(name="OptimizationOptimJL"),
 		Pkg.PackageSpec(name="LabelledArrays"),
 		Pkg.PackageSpec(name="HypertextLiteral"),
+		Pkg.PackageSpec(name="PlutoUI")
 	])
 	Pkg.develop([
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "NonlinearContinua")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
-		Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
+		# Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
 	])
 	using PlutoUI, AbstractDifferentiation, ForwardDiff, CSV, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication
 end

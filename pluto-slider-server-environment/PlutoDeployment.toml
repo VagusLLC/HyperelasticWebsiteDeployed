@@ -26,3 +26,7 @@ exclude = [
 port = 2345
 host = "0.0.0.0"
 # serve_static_export_folder = false
+
+[Pluto]
+[Pluto.evaluation]
+capture_stdout = false
