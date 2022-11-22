@@ -46,6 +46,10 @@ __EOF__
 sudo mv $TEMPFILE /usr/local/bin/pluto-slider-server.sh
 sudo chmod 744 /usr/local/bin/pluto-slider-server.sh
 sudo chmod 664 /etc/systemd/system/pluto-server.service
+
+sudo systemctl daemon-reload
+sudo systemctl start pluto-server
+sudo systemctl enable pluto-server 
 # Install nginx
 sudo apt install nginx -y
 
@@ -57,8 +61,7 @@ sudo ufw status
 sudo ufw enable
 sudo ufw allow ssh
 sudo ufw allow 'Nginx Full'
+# Setup server
+sudo certbot --nginx -d carsonfarmer.me -d carsonfarmer.me
+crontab -e
 
-
-sudo systemctl daemon-reload
-sudo systemctl start pluto-server
-sudo systemctl enable pluto-server 
