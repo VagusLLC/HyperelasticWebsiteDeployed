@@ -21,19 +21,15 @@ begin
 	import Pkg
 	Pkg.activate(mktempdir())
 	Pkg.add([
-		Pkg.PackageSpec(name="PlotlyLight"),
-		Pkg.PackageSpec(name="PlutoUI"),
 		Pkg.PackageSpec(name="CairoMakie"),
 		Pkg.PackageSpec(name="MakiePublication"),
-		Pkg.PackageSpec(name="Bibliography"),
 		Pkg.PackageSpec(name="ForwardDiff"),
+		Pkg.PackageSpec(name="AbstractDifferentiation"),
 		Pkg.PackageSpec(name="CSV"),
 		Pkg.PackageSpec(name="ComponentArrays"),
-		Pkg.PackageSpec(name="Symbolics"),
 		Pkg.PackageSpec(name="DataFrames"),
 		Pkg.PackageSpec(name="Optimization"), 
 		Pkg.PackageSpec(name="OptimizationOptimJL"),
-		Pkg.PackageSpec(name="Unitful"),
 		Pkg.PackageSpec(name="LabelledArrays"),
 		Pkg.PackageSpec(name="HypertextLiteral"),
 	])
@@ -43,7 +39,7 @@ begin
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
 	])
-	using PlotlyLight, PlutoUI, Bibliography, ForwardDiff, CSV, Symbolics, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, Unitful, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication
+	using PlutoUI, AbstractDifferentiation, ForwardDiff, CSV, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication
 end
 
 # ╔═╡ 2d189645-189f-4886-a6d5-5718a613798f
@@ -93,11 +89,11 @@ md"---"
 set_theme!(MakiePublication.theme_web(width = 1000))
 
 # ╔═╡ 6f061996-be32-493d-80e2-daedec8bb103
-exclude = [:Beda, :HorganMurphy, :HorganSaccomandi, :KhiemItskov, :LinearElastic, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin, :MCC, :Shariff];
+exclude = [:HorganMurphy, :KhiemItskov, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin];
 
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
 begin
-	hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: DataType,names(Hyperelastics))
+	hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: Union{DataType, UnionAll},names(Hyperelastics))
 	hyperelastic_models = filter(x -> !(getfield(Hyperelastics, x) <: Hyperelastics.AbstractDataDrivenHyperelasticModel) && (getfield(Hyperelastics, x) <: Hyperelastics.AbstractHyperelasticModel), hyperelastic_models)
 	hyperelastic_models = filter(x -> !(x in exclude), hyperelastic_models)
 	map(model->parameters(model()), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models))
@@ -308,8 +304,8 @@ let
 			λ₂ = getindex.(ŷ.data.λ, 2)
 			s₁ = getindex.(he_data.data.s, 1)
 			s₂ = getindex.(he_data.data.s, 2)
-			f = Figure()
-			ax = CairoMakie.Axis(f,xlabel = "Stretch", ylabel = "Stress [$stress_units]")
+			fig = Figure()
+			ax = CairoMakie.Axis(fig,xlabel = "Stretch", ylabel = "Stress [$stress_units]")
 			s1 = scatter!(
 				ax,
 				λ₁,s₁,
@@ -336,8 +332,8 @@ let
 				split(string(typeof(ψ)), ".")[2]*" - 1",
 				split(string(typeof(ψ)), ".")[2]*" - 2",
 			], position = :lt)
-			f[1,1] = ax
-			f
+			fig[1,1] = ax
+			fig
 		end
 
 		end
@@ -346,9 +342,9 @@ let
 end
 
 # ╔═╡ 86f7e74f-c0a9-4561-85b9-f3ed6559facc
-function ShearModulus(ψ, ps)
-	s(x) = ForwardDiff.gradient(x->StrainEnergyDensity(ψ, x, ps), x)[1]-ForwardDiff.gradient(x->StrainEnergyDensity(ψ, x, ps), x)[3]*x[3]
-	ForwardDiff.gradient(y->s(y)[1], [1.0, 1.0, 1.0])[1]
+function ShearModulus(ψ, ps; adb = AD.ForwardDiffBackend())
+	s(x) = AD.gradient(adb,x->StrainEnergyDensity(ψ, x, ps), x)[1][1]-AD.gradient(adb,x->StrainEnergyDensity(ψ, x, ps), x)[1][3]*x[3]
+	AD.gradient(adb,y->s(y)[1], [1.0, 1.0, 1.0])[1][1]
 end;
 
 # ╔═╡ 8ea07dab-06dc-456d-9769-5e9c3980a777

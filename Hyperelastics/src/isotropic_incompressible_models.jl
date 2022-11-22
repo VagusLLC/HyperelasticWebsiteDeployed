@@ -1,21 +1,5 @@
 # # Available Models
-export GeneralMooneyRivlin, GeneralDarijaniNaghdabadi, GeneralBeda, MooneyRivlin, NeoHookean, Gent, Biderman, Isihara, JamesGreenSimpson, Lion, Yeoh, HauptSedlan, HartmannNeff, HainesWilson, Carroll, BahremanDarijani, Zhao, Knowles, Swanson, YamashitaKawabata, DavisDeThomas, Gregory, ModifiedGregory, Beda, Amin, LopezPamies, GenYeoh, VerondaWestmann, FungDemiray, Vito, ModifiedYeoh, MansouriDarijani, GentThomas, HossMarczakI, HossMarczakII, ExpLn, VanDerWaals, TakamizawaHayashi, YeohFleming, PucciSaccomandi, HorganSaccomandi, Beatty, HorganMurphy, ArrudaBoyce, Ogden, EdwardVilgis, NonaffineTube, Tube, MCC, Bechir4Term, ConstrainedJunction, ContinuumHybrid, ArmanNarooei, PengLandel, ValanisLandel, Attard, Shariff, ThreeChainModel, ModifiedFloryErman, ABGI, BechirChevalier, Bootstrapped8Chain, DavidsonGoulbourne, ExtendedTubeModel, FullNetwork, HartSmith, GeneralConstitutiveModel, Lim, NonaffineMicroSphere, AffineMicroSphere, KhiemItskov, ZunigaBeatty, ChevalierMarco, Alexander, GornetDesmorat, LambertDianiRey, LinearElastic
-
-"""
-Linear Elastic Materials
-
-Paramers: E, ν
-
-Model:
-``\\sum\\limits_{i=0}^{3} \\frac{E}{2(1+\\nu)}(\\lambda_i - 1)^2
-"""
-struct LinearElastic <: AbstractHyperelasticModel end
-
-function NonlinearContinua.StrainEnergyDensity(ψ::LinearElastic, λ⃗::AbstractVector, (; E, ν))
-    return @tullio _ := (E) / (2 * (1 + ν)) * (λ⃗[i] - 1)^2
-end
-
-parameters(ψ::LinearElastic) = (:E, :ν)
+export GeneralMooneyRivlin, GeneralDarijaniNaghdabadi, GeneralBeda, MooneyRivlin, NeoHookean, Gent, Biderman, Isihara, JamesGreenSimpson, Lion, Yeoh, HauptSedlan, HartmannNeff, HainesWilson, Carroll, BahremanDarijani, Zhao, Knowles, Swanson, YamashitaKawabata, DavisDeThomas, Gregory, ModifiedGregory, Beda, Amin, LopezPamies, GenYeoh, VerondaWestmann, FungDemiray, Vito, ModifiedYeoh, MansouriDarijani, GentThomas, HossMarczakI, HossMarczakII, ExpLn, VanDerWaals, TakamizawaHayashi, YeohFleming, PucciSaccomandi, HorganSaccomandi, Beatty,  ArrudaBoyce, Ogden, EdwardVilgis, NonaffineTube, Tube, MCC, Bechir4Term, ConstrainedJunction, ContinuumHybrid, ArmanNarooei, PengLandel, ValanisLandel, Attard, Shariff, ThreeChainModel, ModifiedFloryErman, ABGI, BechirChevalier, Bootstrapped8Chain, DavidsonGoulbourne, ExtendedTubeModel, FullNetwork, HartSmith, GeneralConstitutiveModel, Lim, NonaffineMicroSphere, AffineMicroSphere, ZunigaBeatty, ChevalierMarco, Alexander, GornetDesmorat, LambertDianiRey
 
 """
 General Mooney Rivlin[^1]
@@ -701,9 +685,16 @@ Model: ``\\frac{C_1}{\\alpha}(I_1-3)^{\\alpha}+C_2(I_1-3)+\\frac{C_3}{\\zeta}(I_
 struct Beda <: AbstractHyperelasticModel end
 
 function NonlinearContinua.StrainEnergyDensity(ψ::Beda, λ⃗::AbstractVector, (; C1, C2, C3, K1, α, β, ζ))
-    _I1 = sum(Base.Fix2(^, 2), λ⃗)
-    _I2 = sum(Base.Fix2(^, -2), λ⃗)
-    K1 / β * (_I2 - 3)^β + C1 / α * (_I1 - 3)^α + C2 * (_I1 - 3) + C3 / ζ * (_I1 - 3)^ζ
+    NonlinearContinua.StrainEnergyDensity(
+        GeneralBeda(),
+        λ⃗,
+        (
+            C=[C1, C2, C3],
+            K=[K1],
+            α=[α, 1, ζ],
+            β=[β]
+        ),
+    )
 end
 
 function NonlinearContinua.StrainEnergyDensity(ψ::Beda, I⃗::AbstractVector, (; C1, C2, C3, K1, α, β, ζ), I::InvariantForm)
@@ -1344,7 +1335,7 @@ function parameter_bounds(ψ::YeohFleming, data::AbstractHyperelasticTest)
     Iₘ_min = maximum(I₁, data.data.λ)
     lb = (A=-Inf, B=-Inf, C10=-Inf, Im=Iₘ_min)
     ub = nothing
-    return (lb = lb, ub = ub)
+    return (lb=lb, ub=ub)
 end
 
 """
@@ -1405,8 +1396,11 @@ end
 function parameter_bounds(ψ::HorganSaccomandi, data::AbstractHyperelasticTest)
     _I1 = @. I₁(data.data.λ)
     _I2 = @. I₂(data.data.λ)
-    Js = @. _I1 / 3 - (cbrt(2) * (3_I2 - _I1^2)) / (3 * cbrt(27 + 2 * _I1^3 - 9 * _I1 * _I2 + 3 * sqrt(3) * sqrt(27 + 4 * _I1^3 - 18 * _I1 * _I2 - _I1^2 * _I2^2 + 4 * _I2^3))) + (cbrt(27 + 2 * _I1^3 - 9 * _I1 * _I2 + 3 * sqrt(3) * sqrt(27 + 4 * _I1^3 - 18 * _I1 * _I2 - _I1^2 * _I2^2 + 4 * _I2^3))) / (3 * cbrt(2))
+
+    Js = @. 1 / 6 * (2 * _I1 + (2 * 2^(1 / 3) * (_I1^2 - 3 * _I2)) / (27 + 2 * _I1^3 - 9 * _I1 * _I2)^(1 / 3) + 2^(2 / 3) * (27 + 2 * (_I1^3) - 9 * _I1 * _I2)^(1 / 3))
+
     J_min = maximum(Js)
+
     lb = (μ=-Inf, J=J_min)
     ub = nothing
     return (lb=lb, ub=ub)
@@ -1460,26 +1454,29 @@ Model: ``-\\frac{2\\mu J_m}{c^2}\\log\\bigg(1-\\frac{\\lambda_1^c+\\lambda_2^c+\
 """
 struct HorganMurphy <: AbstractHyperelasticModel end
 
-function NonlinearContinua.StrainEnergyDensity(ψ::HorganMurphy, λ⃗::AbstractVector, (; μ, Jₘ, c))
-    -2 * μ * Jₘ / c^2 * log(1 - (sum(λ⃗ .^ c) - 3) / Jₘ)
+function NonlinearContinua.StrainEnergyDensity(ψ::HorganMurphy, λ⃗::AbstractVector, ps)
+    -2 * ps[1]  * ps[2] / ps[3]^2 * log(1 - (sum(λ⃗ .^ ps[3]) - 3) / ps[2])
+    # -2 * ps.μ  * ps.J / ps.c^2 * log(1 - (sum(λ⃗ .^ ps.c) - 3) / ps.J)
 end
 
 function parameters(ψ::HorganMurphy)
-    return (:μ, :Jₘ, :c)
+    return (:μ, :J, :c)
 end
 
-function parameter_bounds(ψ::HorganMurphy, data::AbstractHyperelasticTest)
-    lb = (μ=-Inf, Jₘ=0, c=0)
-    ub = (μ=Inf, Jₘ=Inf, c=Inf)
-    return (lb=lb, ub=ub)
-end
-
+# function parameter_bounds(ψ::HorganMurphy, data::AbstractHyperelasticTest)
+#     lb = (μ = 0.0, J = 0.0, c = 1.0)
+#     ub = nothing
+#     return (lb = lb, ub = ub)
+# end
 function constraints(ψ::HorganMurphy, data::AbstractHyperelasticTest)
-    function f(u, p)
-        max_sum = maximum(λ⃗ -> sum(λ⃗ .^ u.c), data.data.λ)
-        [1 - (max_sum - 3) / u.Jₘ]
+    function f(res, u, p)
+        max_sum = minimum(λ⃗ -> (sum(λ⃗ .^ u[3]) - 3)/u[2], p.test.data.λ)
+        # max_sum = maximum(λ⃗ -> (sum(λ⃗ .^ u.c) - 3) / u.J, p.test.data.λ)
+        # display(max_sum)
+        res.=[max_sum]
+        res
     end
-    return f
+    return (cons = f, lcons = [-Inf], ucons = [0.0])
 end
 
 """
@@ -1565,35 +1562,117 @@ Shariff [^1]
 Parameters: E, α⃗
 
 Model:
-``E\\sum\\limits_{i=1}^3\\sum\\limits_{j=1}^{N}\\alpha_j \\Phi_j(\\lambda_i)``
+``E\\sum\\limits_{i=1}^3\\sum\\limits_{j=1}^{N}|\\alpha_j| \\Phi_j(\\lambda_i)``
 
 [^1]: > Shariff MH. Strain energy function for filled and unfilled rubberlike material. Rubber chemistry and technology. 2000 Mar;73(1):1-8.
 """
-struct Shariff <: AbstractHyperelasticModel end
+struct Shariff <: AbstractHyperelasticModel
+    ϕ::Vector{Function}
+    Φ::Vector{Function}
+    function Shariff()
+        ϕ1(x) = 2 * log(x) / 3
+        ϕ2(x) = exp(1 - x) + x - 2
+        ϕ3(x) = exp(x - 1) - x
+        ϕ4(x) = (x - 1)^3 / x^3.6
+        ϕj(x, j) = (x - 1)^(j-1)
+        ϕ = [ϕ1, ϕ2, ϕ3, ϕ4, ϕj]
+        c(j, r) = factorial(j) / factorial(r) / factorial(j - r)
+        Φ1(x) = log(x)^2 / 3
+        Φ2(x) = -exp(1.0) * expinti(-1.0) + exp(1.0) * expinti(-x) + x
+        Φ3(x) = (expinti(x) - expinti(1.0)) / exp(1.0) - x + 1
+        Φ4(x) = -1 / (0.6 * x^(0.6)) + 3 / (1.6 * x^(1.6)) - 3 / (2.6 * x^(2.6)) + 1 / (5.6 * x^(5.6)) + 107200/139776
+        Φj(x, j) = (-1)^(j - 1) * log(x) + (-1)^(j - 1) * sum(r -> (-1)^r * c(j - 1, r) * x^r / r, range(1, j - 1)) - (-1)^(j - 1) * sum(r -> (-1)^r * c(j - 1, r) / r, range(1, j - 1))
+        Φ = [Φ1, Φ2, Φ3, Φ4, Φj]
+        new(ϕ, Φ)
+    end
+end
 
 function NonlinearContinua.StrainEnergyDensity(ψ::Shariff, λ⃗::AbstractVector, (; E, α⃗))
-    ϕ = []
-    c(j, r) = factorial(j) / factorial(r) / factorial(j - r)
-    for j in eachindex(α⃗)
-        if j == 0
-            push!(ϕ, x -> log(x)^2 / 3)
-        elseif j == 1
-            push!(ϕ, x -> -exp(1) * expinti(-1) + exp(1) * expinti(-x) + x - 2log(x) - 1)
-        elseif j == 2
-            push!(ϕ, x -> (expinti(x) - expinti(1)) / exp(1) - x + 1)
-        elseif j == 3
-            push!(ϕ, x -> -1 / (0.6 * x^(0.6)) + 3 / (1.6 * x^(1.6)) - 3 / (2.6 * x^(2.6)) + 1 / (5.6 * x^(5.6)) + 107200 / 139776)
-        else
-            push!(ϕ, x -> (-1)^(j - 1) * log(x) + (-1)^(j - 1) * sum(r -> (-1)^r * c(j - 1, r) * x^r / r, range(1, j - 1)) - (-1)^(j - 1) * sum(r -> (-1)^r * c(j - 1, r) / r, range(1, j - 1)))
-        end
-    end
-    E * (@tullio _ := ϕ[i](λ⃗[j]) .* α⃗[i])
+    n = length(α⃗)
+    W1 = sum(map(i -> sum(α⃗[i]*ψ.Φ[i].(λ⃗)), 1:minimum([4, n])))
+    W2 = sum(map(i -> sum(α⃗[i]*ψ.Φ[5].(λ⃗, i)), minimum([5, n]):n))
+    W = W1 + W2
+    return E*W
 end
+function NonlinearContinua.CauchyStressTensor(ψ::Shariff, λ⃗::AbstractVector, (; E, α⃗))
+    n = length(α⃗)
+    σ1 = sum(map(i -> α⃗[i].*ψ.ϕ[i].(λ⃗), 1:minimum([4, n])))
+    σ2 = sum(map(i -> α⃗[i].*ψ.ϕ[5].(λ⃗, i), minimum([5, n]):n))
+    σ = σ1 + σ2
+    return E.*σ
+end
+function NonlinearContinua.SecondPiolaKirchoffStressTensor(ψ::Shariff, λ⃗::AbstractVector, (; E, α⃗))
+    n = length(α⃗)
+    s1 = sum(map(i -> α⃗[i] .* ψ.ϕ[i].(λ⃗), 1:minimum([4, n])))
+    s2 = sum(map(i -> α⃗[i] .* ψ.ϕ[5].(λ⃗, i), minimum([5, n]):n))
+    s = s1 + s2
+    return E .* s ./ λ⃗
+end
+# function NonlinearContinua.StrainEnergyDensity(ψ::Shariff, λ⃗::AbstractVector, (; E, α⃗))
+#     ϕ = []
+#     c(j, r) = factorial(j) / factorial(r) / factorial(j - r)
+
+#     for j in eachindex(α⃗)
+#         if j == 0
+#             push!(ϕ, x -> log(x)^2 / 3)
+#         elseif j == 1
+#             push!(ϕ, x -> -exp(1.0) * expinti(-1.0) + exp(1.0) * expinti(-x) + x - 2 * log(x) - 1)
+#         elseif j == 2
+#             push!(ϕ, x -> (expinti(x) - expinti(1.0)) / exp(1.0) - x + 1)
+#         elseif j == 3
+#             push!(ϕ, x -> -1 / (0.6 * x^(0.6)) + 3 / (1.6 * x^(1.6)) - 3 / (2.6 * x^(2.6)) + 1 / (5.6 * x^(5.6)) + 107200 / 139776)
+#         else
+#             push!(ϕ, x -> (-1)^(j - 1) * log(x) + (-1)^(j - 1) * sum(r -> (-1)^r * c(j - 1, r) * x^r / r, range(1, j - 1)) - (-1)^(j - 1) * sum(r -> (-1)^r * c(j - 1, r) / r, range(1, j - 1)))
+#         end
+#     end
+#     E * (@tullio _ := ϕ[i](λ⃗[j]) .* α⃗[i])
+# end
+
+# function NonlinearContinua.SecondPiolaKirchoffStressTensor(ψ::Shariff, λ⃗::AbstractVector, (; E, α⃗))
+#     ϕ = []
+#     c(j, r) = factorial(j) / factorial(r) / factorial(j - r)
+
+#     for j in eachindex(α⃗)
+#         if j == 0
+#             push!(ϕ, x -> 2 * log(x) / 3)
+#         elseif j == 1
+#             push!(ϕ, x -> exp(1 - x) + x - 2)
+#         elseif j == 2
+#             push!(ϕ, x -> exp(x - 1) - x)
+#         elseif j == 3
+#             push!(ϕ, x -> (x - 1)^3 / x^3.6)
+#         else
+#             push!(ϕ, x -> (x - 1)^(j - 1))
+#         end
+#     end
+#     @tullio s[j] := E * ϕ[i](λ⃗[j]) * α⃗[i] / λ⃗[j]
+#     return s
+# end
+
+# function NonlinearContinua.CauchyStressTensor(ψ::Shariff, λ⃗::AbstractVector, (; E, α⃗))
+#     ϕ = []
+#     c(j, r) = factorial(j) / factorial(r) / factorial(j - r)
+
+#     for j in eachindex(α⃗)
+#         if j == 0
+#             push!(ϕ, x -> 2 * log(x) / 3)
+#         elseif j == 1
+#             push!(ϕ, x -> exp(1 - x) + x - 2)
+#         elseif j == 2
+#             push!(ϕ, x -> exp(x - 1) - x)
+#         elseif j == 3
+#             push!(ϕ, x -> (x - 1)^3 / x^3.6)
+#         else
+#             push!(ϕ, x -> (x - 1)^(j - 1))
+#         end
+#     end
+#     @tullio σ[j] := E * ϕ[i](λ⃗[j]) * α⃗[i]
+#     return σ
+# end
 
 function parameters(ψ::Shariff)
     return (:E, :α⃗)
 end
-
 """
 Arman - Narooei [^1]
 
@@ -1969,50 +2048,58 @@ Model: See Paper
 [^1]: > Miehe C, Göktepe S, Lulei F. A micro-macro approach to rubber-like materials—part I: the non-affine micro-sphere model of rubber elasticity. Journal of the Mechanics and Physics of Solids. 2004 Nov 1;52(11):2617-60.
 [^2]: > Cohen A. A Padé approximant to the inverse Langevin function. Rheologica acta. 1991 May;30(3):270-3.
 """
-struct NonaffineMicroSphere <: AbstractHyperelasticModel
+struct NonaffineMicroSphere{T,S} <: AbstractHyperelasticModel
     ℒinv::Function
-    NonaffineMicroSphere(; ℒinv::Function=CohenRounded3_2) = new(ℒinv)
+    r⃗::Vector{T}
+    w::Vector{S}
+    function NonaffineMicroSphere(; ℒinv::Function=CohenRounded3_2, n=21)
+        if n == 21
+            a = √(2) / 2
+            b = 0.836095596749
+            c = 0.387907304067
+            r⃗ = [
+                [0, 0, 1],
+                [0, 1, 0],
+                [1, 0, 0],
+                [0, a, a],
+                [0, -a, a],
+                [a, 0, a],
+                [-a, 0, a],
+                [a, a, 0],
+                [-a, a, 0],
+                [b, c, c],
+                [-b, c, c],
+                [b, -c, c],
+                [-b, -c, c],
+                [c, b, c],
+                [-c, b, c],
+                [c, -b, c],
+                [-c, -b, c],
+                [c, c, b],
+                [-c, c, b],
+                [c, -c, b],
+                [-c, -c, b],
+            ]
+            w1 = 0.02652142440932
+            w2 = 0.0199301476312
+            w3 = 0.0250712367487
+
+            w = 2 .* [fill(w1, 3); fill(w2, 6); fill(w3, 12)] # Multiply by two since integration is over the half-sphere
+        else
+            @error "Method not implemented for n = $(n)"
+        end
+        new{eltype(r⃗),eltype(w)}(ℒinv, r⃗, w)
+    end
 end
 
 function NonlinearContinua.StrainEnergyDensity(ψ::NonaffineMicroSphere, λ⃗::AbstractVector, (; μ, N, p, U, q))
-    a = √(2) / 2
-    b = 0.836095596749
-    c = 0.387907304067
-    r⃗ = [
-        [0, 0, 1],
-        [0, 1, 0],
-        [1, 0, 0],
-        [0, a, a],
-        [0, -a, a],
-        [a, 0, a],
-        [-a, 0, a],
-        [a, a, 0],
-        [-a, a, 0],
-        [b, c, c],
-        [-b, c, c],
-        [b, -c, c],
-        [-b, -c, c],
-        [c, b, c],
-        [-c, b, c],
-        [c, -b, c],
-        [-c, -b, c],
-        [c, c, b],
-        [-c, c, b],
-        [c, -c, b],
-        [-c, -c, b],
-    ]
-    w1 = 0.02652142440932
-    w2 = 0.0199301476312
-    w3 = 0.0250712367487
 
-    w = 2 .* [fill(w1, 3); fill(w2, 6); fill(w3, 12)] # Multiply by two since integration is over the half-sphere
-
-    @tullio λ  := sqrt(sum(λ⃗.^2 .*r⃗[i].^2))^p*w[i]
+    @tullio λ := sqrt(sum(λ⃗ .^ 2 .* ψ.r⃗[i] .^ 2))^p * ψ.w[i]
     λr = λ^(1 / p) / √N
     β = ψ.ℒinv(λr)
     ψf = μ * N * (λr * β + log(β / sinh(β)))
 
-    @tullio ν := sqrt(sum(λ⃗.^-2 .*r⃗[i].^2))^q*w[i]
+    @tullio ν := sqrt(sum(λ⃗ .^ -2 .* ψ.r⃗[i] .^ 2))^q * ψ.w[i]
     ψc = U * μ * N * (ν)
     return ψf + ψc
 end
@@ -2040,56 +2127,61 @@ Model: See Paper
 [^1]: > Miehe C, Göktepe S, Lulei F. A micro-macro approach to rubber-like materials—part I: the non-affine micro-sphere model of rubber elasticity. Journal of the Mechanics and Physics of Solids. 2004 Nov 1;52(11):2617-60.
 [^2]: > Cohen A. A Padé approximant to the inverse Langevin function. Rheologica acta. 1991 May;30(3):270-3.
 """
-struct AffineMicroSphere <: AbstractHyperelasticModel
+struct AffineMicroSphere{T,S} <: AbstractHyperelasticModel
     ℒinv::Function
-    AffineMicroSphere(; ℒinv::Function=TreloarApproximation) = new(ℒinv)
+    r⃗::Vector{T}
+    w::Vector{S}
+    function AffineMicroSphere(; ℒinv::Function=TreloarApproximation, n=21)
+        if n == 21
+            a = √(2) / 2
+            b = 0.836095596749
+            c = 0.387907304067
+            r⃗ = [
+                [0, 0, 1],
+                [0, 1, 0],
+                [1, 0, 0],
+                [0, a, a],
+                [0, -a, a],
+                [a, 0, a],
+                [-a, 0, a],
+                [a, a, 0],
+                [-a, a, 0],
+                [b, c, c],
+                [-b, c, c],
+                [b, -c, c],
+                [-b, -c, c],
+                [c, b, c],
+                [-c, b, c],
+                [c, -b, c],
+                [-c, -b, c],
+                [c, c, b],
+                [-c, c, b],
+                [c, -c, b],
+                [-c, -c, b],
+            ]
+            w1 = 0.02652142440932
+            w2 = 0.0199301476312
+            w3 = 0.0250712367487
+
+            w = 2 .* [fill(w1, 3); fill(w2, 6); fill(w3, 12)] # Multiply by two since integration is over the half-sphere
+        else
+            @error "Method for n = $(n) is not implemented"
+        end
+        new{eltype(r⃗),eltype(w)}(ℒinv, r⃗, w)
+    end
 end
 
 function NonlinearContinua.StrainEnergyDensity(ψ::AffineMicroSphere, λ⃗::AbstractVector, (; μ, N))
-    a = √(2) / 2
-    b = 0.836095596749
-    c = 0.387907304067
-    r⃗ = [
-        [0, 0, 1],
-        [0, 1, 0],
-        [1, 0, 0],
-        [0, a, a],
-        [0, -a, a],
-        [a, 0, a],
-        [-a, 0, a],
-        [a, a, 0],
-        [-a, a, 0],
-        [b, c, c],
-        [-b, c, c],
-        [b, -c, c],
-        [-b, -c, c],
-        [c, b, c],
-        [-c, b, c],
-        [c, -b, c],
-        [-c, -b, c],
-        [c, c, b],
-        [-c, c, b],
-        [c, -c, b],
-        [-c, -c, b],
-    ]
-    w1 = 0.02652142440932
-    w2 = 0.0199301476312
-    w3 = 0.0250712367487
 
-    w = 2 .* [fill(w1, 3); fill(w2, 6); fill(w3, 12)] # Multiply by two since integration is over the half-sphere
-
-    @tullio λr[i] := sqrt(sum(λ⃗ .^ 2 .* r⃗[i] .^ 2))/ √N
-    # λr = λ
+    @tullio λr[i] := sqrt(sum(λ⃗ .^ 2 .* ψ.r⃗[i] .^ 2)) / √N
     @tullio β[i] := ψ.ℒinv(λr[i])
-    @tullio ψf := μ * N * (λr[i] * β[i] + log(β[i] / sinh(β[i]))) * w[i]
+    @tullio ψf := μ * N * (λr[i] * β[i] + log(β[i] / sinh(β[i]))) * ψ.w[i]
 
-    # @tullio ν := sqrt(sum(λ⃗ .^ -2 .* r⃗[i] .^ 2))
-    # @tullio ψc := U * μ * N * ν * w[i]
-    return ψf #+ ψc
+    return ψf
 end
 
 function parameters(ψ::AffineMicroSphere)
-    return (:μ, :N, :p, :U, :q)
+    return (:μ, :N)
 end
 
 """
