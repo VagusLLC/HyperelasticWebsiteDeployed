@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.15
+# v0.19.16
 
 using Markdown
 using InteractiveUtils
@@ -32,7 +32,7 @@ begin
 		Pkg.PackageSpec(name="OptimizationOptimJL"),
 		Pkg.PackageSpec(name="LabelledArrays"),
 		Pkg.PackageSpec(name="HypertextLiteral"),
-		Pkg.PackageSpec(name="PlutoUI")
+		Pkg.PackageSpec(name="PlutoUI"),
 	])
 	Pkg.develop([
 		Pkg.PackageSpec(path=joinpath(local_dir, "InverseLangevinApproximations")),
@@ -45,9 +45,6 @@ end
 
 # ╔═╡ 2d189645-189f-4886-a6d5-5718a613798f
 using Hyperelastics
-
-# ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
-TableOfContents()
 
 # ╔═╡ 73ab5774-dc3c-4759-92c4-7f7917c18cbf
 HTML("""<center><h1>Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
@@ -63,28 +60,38 @@ Test Type: $(@bind test_type Select([:Uniaxial, :Biaxial]))
 @bind data FilePicker()
 
 # ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
-HTML("""<center><h3>Verification Plot</h3></center>""")
+if !isnothing(data) HTML("""<center><h3>Verification Plot</h3></center>""") end
 
 # ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
-HTML("""<center><h2>Select Hyperelastic Model</h2></center>""")
+if !isnothing(data) HTML("""<center><h2>Select Hyperelastic Model</h2></center>""") end
 
 # ╔═╡ 9343a51e-5002-4489-a55f-12c49f5b8cf3
+if !isnothing(data)
 md"""
 !!! note "Note"
 	- When selecting a phenomenological model, be aware that using higher order models may result in overfitting of the data.
 	- All moduli in models are in the defined stress units above
 """
+end
+
+# ╔═╡ da3634ea-48d7-4d4f-a853-c631a6fa7bf4
+if !isnothing(data) html"""<center><h3> Model Information</h3></center>""" end
 
 # ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
-html"""<center><h2> Set initial parameter guess</h2></center>"""
+if !isnothing(data) html"""<center><h2> Set initial parameter guess</h2></center>""" end
 
 # ╔═╡ 08d775f2-94fc-4ca8-bcdd-e9535cfd129a
+if !isnothing(data) 
 md"""
 Optimizer: $(@bind optimizer Select([:LBFGS, :BFGS, :NelderMead])) - *If parameters are not converging, try using a different optimizer or changing your initial guess*
 """
+end
 
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 md"---"
+
+# ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
+TableOfContents()
 
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
 set_theme!(MakiePublication.theme_web(width = 1000))
@@ -101,7 +108,10 @@ begin
 end;
 
 # ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
-@bind model Select(hyperelastic_models)
+if !isnothing(data) @bind model Select(hyperelastic_models) end
+
+# ╔═╡ a75d209e-93cb-4b21-899e-4c567f0dfb09
+if !isnothing(data) eval(:(@doc $(getfield(Hyperelastics, model)()))) end
 
 # ╔═╡ 7998136a-de3d-42f9-9028-1172415c8b75
 if !isnothing(data)
@@ -373,7 +383,6 @@ function model_note(ψ::Gent)
 end;
 
 # ╔═╡ Cell order:
-# ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
 # ╟─692b1d0d-2353-4931-b289-490f74988811
 # ╟─6434a755-90be-45f8-8e1e-cdeba4be244b
@@ -383,6 +392,8 @@ end;
 # ╟─d0319d95-f335-48fa-b789-59daf9a0f1a4
 # ╟─9343a51e-5002-4489-a55f-12c49f5b8cf3
 # ╟─2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
+# ╟─da3634ea-48d7-4d4f-a853-c631a6fa7bf4
+# ╟─a75d209e-93cb-4b21-899e-4c567f0dfb09
 # ╟─c6e726ab-ea78-4129-a662-338976633cd5
 # ╟─703091d0-bf33-4baf-b75e-43e01b42ec0b
 # ╟─08d775f2-94fc-4ca8-bcdd-e9535cfd129a
@@ -392,6 +403,7 @@ end;
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
 # ╟─7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
+# ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
 # ╟─6f061996-be32-493d-80e2-daedec8bb103
