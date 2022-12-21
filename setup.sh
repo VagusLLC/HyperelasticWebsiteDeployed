@@ -62,6 +62,6 @@ sudo ufw enable
 sudo ufw allow ssh
 sudo ufw allow 'Nginx Full'
 # Setup server
-sudo certbot --nginx -d carsonfarmer.me -d carsonfarmer.me
+sudo certbot --nginx -d notebooks.vagusllc.com -d notebooks.vagusllc.com
 crontab -e
 
