@@ -56,21 +56,12 @@ HTML("""<center><h1>Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
 # Select data: $(@bind data_type Select([:Custom => "User Provided"], default = :Custom))
 # """
 
-# ╔═╡ d13bc0f8-2da4-441d-bed1-62e4d357d84d
-data_type = :Custom;
-
 # ╔═╡ 692b1d0d-2353-4931-b289-490f74988811
-if data_type == :Kawabata
-md"""
-λ₁ Stretch = $(@bind λ₁_stretch Select([1.040, 1.060, 1.080, 1.100, 1.120, 1.14, 1.16, 1.2, 1.24, 1.3, 1.6, 1.9, 2.2, 2.5, 2.8, 3.1, 3.4, 3.7]))
-"""
-elseif data_type == :Custom
 md"""
 Test Type: $(@bind test_type Select([:Uniaxial, :Biaxial]))
 
 Upload Data $(@bind data FilePicker())
 """
-end
 
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 md"---"
@@ -102,14 +93,11 @@ begin
 end;
 
 # ╔═╡ 7998136a-de3d-42f9-9028-1172415c8b75
-if data_type == :Custom
 	if !isnothing(data)
 		df = CSV.read(data["data"], DataFrame);
-	end
-end;
+	end;
 
 # ╔═╡ 69068002-ca3a-4e19-9562-6736d3b15dea
-if data_type == :Custom
 if !isnothing(data)
 	if test_type == :Uniaxial
 md"""
@@ -137,19 +125,9 @@ Test Name: $(@bind test_name TextField())
 """	
 	end
 end
-elseif data_type == :Treloar
-	stress_units = "MPa"
-	test_name = "Treloar 1944"
-	nothing
-elseif data_type == :Kawabata
-	stress_units = "MPa"
-	test_name = "Kawabata 1981, λ₁ = $(λ₁_stretch)"
-	nothing
-end
 
 # ╔═╡ 12256359-1dca-4a71-a225-66994e2dfd66
 begin
-	if data_type == :Custom
 		if !isnothing(data)
 			if test_type == :Uniaxial
 				he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = test_name);
@@ -162,11 +140,6 @@ begin
 					name = test_name);
 			end
 		end
-	elseif data_type == :Treloar
-		he_data = Treloar1944Uniaxial()
-	elseif data_type == :Kawabata
-		he_data = Kawabata1981(λ₁_stretch)
-	end
 	# map(model->Hyperelastics.parameter_bounds(model(), he_data), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models));
 end;
 
@@ -511,7 +484,6 @@ end;
 # ╔═╡ Cell order:
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
 # ╟─cac1e660-c03b-420a-b9bc-b4d4712ae325
-# ╟─d13bc0f8-2da4-441d-bed1-62e4d357d84d
 # ╟─692b1d0d-2353-4931-b289-490f74988811
 # ╟─69068002-ca3a-4e19-9562-6736d3b15dea
 # ╟─f12538a9-f595-4fae-b76c-078179bc5109
