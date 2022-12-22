@@ -1,6 +1,6 @@
 [Export]
 offer_binder = false
-slider_server_url = "https://carsonfarmer.me"
+# slider_server_url = "notebooks.vagusllc.com"
 exclude = [
     "PlutoUI/src/Builtins.jl",
     "PlutoUI/src/Clock.jl",
