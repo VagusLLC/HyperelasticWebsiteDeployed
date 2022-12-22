@@ -51,10 +51,13 @@ HTML("""<center><h1>Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
 		<center><h2>Upload Uniaxial Test Data</h2></center>
 		""")
 
-# ╔═╡ 089bb304-ff11-489e-a668-05d0da6ebcc4
-md"""
-Select data: $(@bind data_type Select([:Treloar => "Uniaxial Tension for 8% S. Rubber at 20°C (Treloar 1944)", :Kawabata => "Biaxial Tension for Isoprene Rubber Vulcanízate at 20°C (Kawabata 1981)", :Custom => "User Provided"], default = :Custom))
-"""
+# ╔═╡ cac1e660-c03b-420a-b9bc-b4d4712ae325
+# md"""
+# Select data: $(@bind data_type Select([:Custom => "User Provided"], default = :Custom))
+# """
+
+# ╔═╡ d13bc0f8-2da4-441d-bed1-62e4d357d84d
+data_type = :Custom;
 
 # ╔═╡ 692b1d0d-2353-4931-b289-490f74988811
 if data_type == :Kawabata
@@ -507,7 +510,8 @@ end;
 
 # ╔═╡ Cell order:
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
-# ╟─089bb304-ff11-489e-a668-05d0da6ebcc4
+# ╟─cac1e660-c03b-420a-b9bc-b4d4712ae325
+# ╟─d13bc0f8-2da4-441d-bed1-62e4d357d84d
 # ╟─692b1d0d-2353-4931-b289-490f74988811
 # ╟─69068002-ca3a-4e19-9562-6736d3b15dea
 # ╟─f12538a9-f595-4fae-b76c-078179bc5109
