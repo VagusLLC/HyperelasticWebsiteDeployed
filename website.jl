@@ -46,8 +46,11 @@ end
 # ╔═╡ 2d189645-189f-4886-a6d5-5718a613798f
 using Hyperelastics
 
+# ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
+TableOfContents()
+
 # ╔═╡ 73ab5774-dc3c-4759-92c4-7f7917c18cbf
-HTML("""<center><h1>Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
+HTML("""<center><h1> Hyperelastic Model <br> Fitting Toolbox</h1></center>
 		<center><h2>Upload Uniaxial Test Data</h2></center>
 		""")
 
@@ -77,9 +80,6 @@ HTML("""
 		font-family: "Archivo Black";
 	}
 </style>""")
-
-# ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
-TableOfContents()
 
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
 set_theme!(MakiePublication.theme_web(width = 1000))
@@ -488,6 +488,7 @@ function model_note(ψ::Gent)
 end;
 
 # ╔═╡ Cell order:
+# ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
 # ╟─cac1e660-c03b-420a-b9bc-b4d4712ae325
 # ╟─692b1d0d-2353-4931-b289-490f74988811
@@ -509,7 +510,6 @@ end;
 # ╟─7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 # ╟─9e411ed3-0061-4831-b047-44c920959c83
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
-# ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
 # ╟─6f061996-be32-493d-80e2-daedec8bb103
