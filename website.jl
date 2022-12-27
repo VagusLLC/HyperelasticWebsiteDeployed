@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.18
+# v0.19.19
 
 using Markdown
 using InteractiveUtils
@@ -71,7 +71,11 @@ HTML("""
 <style>
 	select, button, input {
    		font-size: 12px;
+		font-family: "Archivo Black";
 		}
+	p, h2 {
+		font-family: "Archivo Black";
+	}
 </style>""")
 
 # ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
@@ -105,10 +109,10 @@ Stress Column: $(@bind stress_column Select(names(df)))
 
 Stretch Column: $(@bind stretch_column Select(names(df)))
 
-Stress Units: $(@bind stress_units TextField())
-
-Test Name: $(@bind test_name TextField())
 """
+		# Stress Units: $(@bind stress_units TextField())
+
+# Test Name: $(@bind test_name TextField())
 	elseif test_type == :Biaxial
 md"""
 Stress-1 Column: $(@bind stress1_column Select(names(df)))
@@ -119,10 +123,11 @@ Stretch-1 Column: $(@bind stretch1_column Select(names(df)))
 
 Stretch-2 Column: $(@bind stretch2_column Select(names(df)))
 
-Stress Units: $(@bind stress_units TextField())
-
-Test Name: $(@bind test_name TextField())
 """	
+# Stress Units: $(@bind stress_units TextField())
+
+# Test Name: $(@bind test_name TextField())
+
 	end
 end
 
@@ -130,14 +135,14 @@ end
 begin
 		if !isnothing(data)
 			if test_type == :Uniaxial
-				he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = test_name);
+				he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = "experimental");
 			elseif test_type == :Biaxial
 				he_data = HyperelasticBiaxialTest(
 					df[!, stretch1_column],
 					df[!, stretch2_column],
 					df[!, stress1_column],
 					df[!, stress2_column], 
-					name = test_name);
+					name = "experimental");
 			end
 		end
 	# map(model->Hyperelastics.parameter_bounds(model(), he_data), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models));
@@ -146,7 +151,7 @@ end;
 # ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
 if @isdefined he_data
 	if !isnothing(he_data) 
-		HTML("""<center><h3>Verification Plot</h3></center>""") 
+		HTML("""<center><h3 >Verification Plot</h3></center>""") 
 	end
 end
 
@@ -160,39 +165,39 @@ if !isnothing(he_data)
 			getindex.(he_data.data.s, 1),
 			axis = (
 				xlabel = "Stretch", 
-				ylabel = "Stress [$stress_units]"
+				ylabel = "Stress"
 				), 
-			label = test_name*" - Experimental"
+			label = "Experimental"
 			)
 		axislegend(position = :lt)
 		f
 	elseif typeof(he_data) == HyperelasticBiaxialTest
-		f = Figure(resolution = 5.5 .*(200, 100))
+		f = Figure(resolution = 5.5 .*(200, 100), fonts = (;regular="Archivo Black"))
 		ax1 = Makie.Axis(f[1, 1], xlabel = "λ₁ - Stretch", ylabel = "Stress [$(stress_units)]")
 		ax2 = Makie.Axis(f[1, 2], xlabel = "λ₂ - Stretch", ylabel = "Stress [$(stress_units)]")
 		scatter!(
 			ax1, 
 			getindex.(he_data.data.λ, 1), 
 			getindex.(he_data.data.s, 1),
-			label = test_name * " - Nominal 1-direction"
+			label = "Nominal 1-direction"
 		)
 		scatter!(
 			ax1, 
 			getindex.(he_data.data.λ, 1),
 			getindex.(he_data.data.s, 2),
-			label = test_name * " - Nominal 2-direction"
+			label = "Nominal 2-direction"
 		)
 		scatter!(
 			ax2, 
 			getindex.(he_data.data.λ, 2), 
 			getindex.(he_data.data.s, 1),
-			label = test_name * " - Nominal 1-direction"
+			label = "Nominal 1-direction"
 		)
 		scatter!(
 			ax2, 
 			getindex.(he_data.data.λ, 2),
 			getindex.(he_data.data.s, 2),
-			label = test_name * " - Nominal 2-direction"
+			label = "Nominal 2-direction"
 		)
 		axislegend(ax1, position = :lt)
 		axislegend(ax2, position = :lt)
@@ -205,7 +210,7 @@ end
 # ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
 if @isdefined he_data
 	if !isnothing(he_data)
-		HTML("""<center><h2>Select Hyperelastic Model</h2></center>""") 
+		HTML("""<center><h2 >Select Hyperelastic Model</h2></center>""") 
 	end
 end
 
@@ -230,7 +235,7 @@ end
 # ╔═╡ da3634ea-48d7-4d4f-a853-c631a6fa7bf4
 if @isdefined he_data
 if !isnothing(he_data) 
-	html"""<center><h3> Model Information</h3></center>""" 
+	html"""<center><h3 > Model Information</h3></center>""" 
 end
 end
 
@@ -242,7 +247,7 @@ end
 # ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
 if @isdefined he_data
 if !isnothing(he_data) 
-	html"""<center><h2> Set initial parameter guess</h2></center>""" 
+	html"""<center><h2 style = "font-family:Archivo Black"> Set initial parameter guess</h2></center>""" 
 end
 end
 
@@ -332,7 +337,7 @@ if @isdefined he_data
 				_str = "<span>"
 				columns = string.(parameters(getfield(Hyperelastics, model)()))
 				####################             HTML        #######################
-				_str *= """<center><h2> Final Parameters</h2></center>"""
+				_str *= """<center><h2  style = "font-family:Archivo Black"> Final Parameters</h2></center>"""
 				_str *= """<table>"""
 				for column ∈ columns
 					_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
@@ -366,7 +371,7 @@ if @isdefined he_data
 			λ₁ = getindex.(ŷ.data.λ, 1)
 			s₁ = getindex.(he_data.data.s, 1)
 			f = Figure()
-			ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress [$stress_units]")
+			ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress")
 			s1 = scatter!(
 				ax,
 				λ₁,s₁,
@@ -377,7 +382,7 @@ if @isdefined he_data
 				Δs₁₃, 
 				color = MakiePublication.seaborn_muted()[2],
 			)
-			axislegend(ax, [[s1], [l1]], [test_name*" - Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
+			axislegend(ax, [[s1], [l1]], ["Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
 			f[1,1] = ax
 			f
 		elseif typeof(he_data) == HyperelasticBiaxialTest
@@ -388,8 +393,8 @@ if @isdefined he_data
 			s₁ = getindex.(he_data.data.s, 1)
 			s₂ = getindex.(he_data.data.s, 2)
 			fig = Figure(resolution = 5.5.*(200, 100))
-			ax1 = CairoMakie.Axis(fig[1,1],xlabel = "λ₁ Stretch", ylabel = "Stress [$stress_units]")
-			ax2 = CairoMakie.Axis(fig[1,2],xlabel = "λ₂ Stretch", ylabel = "Stress [$stress_units]")
+			ax1 = CairoMakie.Axis(fig[1,1],xlabel = "λ₁ Stretch", ylabel = "Stress")
+			ax2 = CairoMakie.Axis(fig[1,2],xlabel = "λ₂ Stretch", ylabel = "Stress")
 			s11 = scatter!(
 				ax1,
 				λ₁,s₁,
@@ -429,14 +434,14 @@ if @isdefined he_data
 				Δs₂₃, 
 			)
 			axislegend(ax1, [[s11], [s12], [l11], [l12]], [
-				test_name*" - Experimental - 1", 
-				test_name*" - Experimental - 2", 
+				"Experimental - 1", 
+				"Experimental - 2", 
 				split(string(typeof(ψ)), ".")[2]*" - 1",
 				split(string(typeof(ψ)), ".")[2]*" - 2",
 			], position = :lt)
 			axislegend(ax2, [[s21], [s22], [l21], [l22]], [
-				test_name*" - Experimental - 1", 
-				test_name*" - Experimental - 2", 
+				"Experimental - 1", 
+				"Experimental - 2", 
 				split(string(typeof(ψ)), ".")[2]*" - 1",
 				split(string(typeof(ψ)), ".")[2]*" - 2",
 			], position = :lt)
@@ -463,11 +468,12 @@ if @isdefined he_data
 if !isnothing(he_data) && fit_model && @isdefined sol
 	if parsed && !isnothing(he_data)
 		HTML("""
-		<center><h2> Other Values </h2></center>
-		Small Strain Shear Modulus: $(round(ShearModulus(ψ, sol), digits = 3)) $(stress_units)
+		<center><h2  style = "font-family:Archivo Black"> Other Values </h2></center>
+		<p  style = "font-family:Archivo Black">
+		Small Strain Shear Modulus: $(round(ShearModulus(ψ, sol), digits = 3))
 		<br>
-		Small Strain Elastic Modulus: $(round(ElasticModulus(ψ, sol), digits = 3)) $(stress_units)
-
+		Small Strain Elastic Modulus: $(round(ElasticModulus(ψ, sol), digits = 3))
+		</p>
 		""")
 	end
 end
