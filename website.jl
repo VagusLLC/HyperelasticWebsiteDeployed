@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.18
+# v0.19.19
 
 using Markdown
 using InteractiveUtils
@@ -47,8 +47,8 @@ end
 using Hyperelastics
 
 # ╔═╡ 73ab5774-dc3c-4759-92c4-7f7917c18cbf
-HTML("""<center><h1>Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
-		<center><h2>Upload Uniaxial Test Data</h2></center>
+HTML("""<center><h1  style = "font-family:Archivo Black">Vagus <br> Hyperelastic Model Fitting Toolbox</h1></center>
+		<center><h2  style = "font-family:Archivo Black">Upload Uniaxial Test Data</h2></center>
 		""")
 
 # ╔═╡ cac1e660-c03b-420a-b9bc-b4d4712ae325
@@ -71,7 +71,11 @@ HTML("""
 <style>
 	select, button, input {
    		font-size: 12px;
+		font-family: "Archivo Black";
 		}
+	p, h2 {
+		font-family: "Archivo Black";
+	}
 </style>""")
 
 # ╔═╡ 0dd8b7de-570d-41a7-b83d-d1bbe39c017e
@@ -146,7 +150,7 @@ end;
 # ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
 if @isdefined he_data
 	if !isnothing(he_data) 
-		HTML("""<center><h3>Verification Plot</h3></center>""") 
+		HTML("""<center><h3  style = "font-family:Archivo Black">Verification Plot</h3></center>""") 
 	end
 end
 
@@ -167,7 +171,7 @@ if !isnothing(he_data)
 		axislegend(position = :lt)
 		f
 	elseif typeof(he_data) == HyperelasticBiaxialTest
-		f = Figure(resolution = 5.5 .*(200, 100))
+		f = Figure(resolution = 5.5 .*(200, 100), fonts = (;regular="Archivo Black"))
 		ax1 = Makie.Axis(f[1, 1], xlabel = "λ₁ - Stretch", ylabel = "Stress [$(stress_units)]")
 		ax2 = Makie.Axis(f[1, 2], xlabel = "λ₂ - Stretch", ylabel = "Stress [$(stress_units)]")
 		scatter!(
@@ -205,7 +209,7 @@ end
 # ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
 if @isdefined he_data
 	if !isnothing(he_data)
-		HTML("""<center><h2>Select Hyperelastic Model</h2></center>""") 
+		HTML("""<center><h2  style = "font-family:Archivo Black">Select Hyperelastic Model</h2></center>""") 
 	end
 end
 
@@ -230,7 +234,7 @@ end
 # ╔═╡ da3634ea-48d7-4d4f-a853-c631a6fa7bf4
 if @isdefined he_data
 if !isnothing(he_data) 
-	html"""<center><h3> Model Information</h3></center>""" 
+	html"""<center><h3  style = "font-family:Archivo Black"> Model Information</h3></center>""" 
 end
 end
 
@@ -242,7 +246,7 @@ end
 # ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
 if @isdefined he_data
 if !isnothing(he_data) 
-	html"""<center><h2> Set initial parameter guess</h2></center>""" 
+	html"""<center><h2 style = "font-family:Archivo Black"> Set initial parameter guess</h2></center>""" 
 end
 end
 
@@ -332,7 +336,7 @@ if @isdefined he_data
 				_str = "<span>"
 				columns = string.(parameters(getfield(Hyperelastics, model)()))
 				####################             HTML        #######################
-				_str *= """<center><h2> Final Parameters</h2></center>"""
+				_str *= """<center><h2  style = "font-family:Archivo Black"> Final Parameters</h2></center>"""
 				_str *= """<table>"""
 				for column ∈ columns
 					_str *=	"""<th>$(replace(column, "_" => " "))</th>"""
@@ -463,11 +467,12 @@ if @isdefined he_data
 if !isnothing(he_data) && fit_model && @isdefined sol
 	if parsed && !isnothing(he_data)
 		HTML("""
-		<center><h2> Other Values </h2></center>
+		<center><h2  style = "font-family:Archivo Black"> Other Values </h2></center>
+		<p  style = "font-family:Archivo Black">
 		Small Strain Shear Modulus: $(round(ShearModulus(ψ, sol), digits = 3)) $(stress_units)
 		<br>
 		Small Strain Elastic Modulus: $(round(ElasticModulus(ψ, sol), digits = 3)) $(stress_units)
-
+		</p>
 		""")
 	end
 end
