@@ -44,11 +44,13 @@ begin
 end
 
 # ╔═╡ 2d189645-189f-4886-a6d5-5718a613798f
+# ╠═╡ show_logs = false
 using Hyperelastics
 
 # ╔═╡ 73ab5774-dc3c-4759-92c4-7f7917c18cbf
 HTML("""<center><h1> Hyperelastic Model <br> Fitting Toolbox</h1></center>
 		<center><h2>Upload Uniaxial Test Data</h2></center>
+		<center><p style="color:red;"><b>This tool is currently in test mode. Please provide any feedback to <i>contact@vagusllc.com</i></b></p></center>
 		""")
 
 # ╔═╡ cac1e660-c03b-420a-b9bc-b4d4712ae325
@@ -459,11 +461,9 @@ TableOfContents_NEW()
 # ╔═╡ d495c5e5-bf33-475c-a49a-5c9f8dc13789
 set_theme!(MakiePublication.theme_web(width = 1000))
 
-# ╔═╡ 6f061996-be32-493d-80e2-daedec8bb103
-exclude = [:HorganMurphy, :KhiemItskov, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin];
-
 # ╔═╡ e0e7407d-fe60-4583-8060-3ba38c22c409
 begin
+	exclude = [:HorganMurphy, :KhiemItskov, :GeneralCompressible, :LogarithmicCompressible, :GeneralMooneyRivlin];
 	ns = filter(x->x!=:citation, names(Hyperelastics))
 	hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: Union{DataType, UnionAll},ns)
 	hyperelastic_models = filter(x -> !(getfield(Hyperelastics, x) <: Hyperelastics.AbstractDataDrivenHyperelasticModel) && (getfield(Hyperelastics, x) <: Hyperelastics.AbstractHyperelasticModel), hyperelastic_models)
@@ -888,9 +888,8 @@ end;
 # ╟─93e75cbf-946a-4244-a8ae-a54120169824
 # ╟─ea9f6a58-a5df-4a2e-aadd-5ff1107d8b55
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
-# ╟─2d189645-189f-4886-a6d5-5718a613798f
+# ╠═2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
-# ╟─6f061996-be32-493d-80e2-daedec8bb103
 # ╟─e0e7407d-fe60-4583-8060-3ba38c22c409
 # ╟─7998136a-de3d-42f9-9028-1172415c8b75
 # ╟─12256359-1dca-4a71-a225-66994e2dfd66
