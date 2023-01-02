@@ -65,9 +65,6 @@ Test Type: $(@bind test_type Select([:Uniaxial, :Biaxial]))
 Upload Data $(@bind data FilePicker([MIME("text/csv")]))
 """
 
-# ╔═╡ 6fe5cea7-6573-426f-875e-066a0ed0cfde
-md"""Fit Model: $(@bind fit_model CheckBox(default = false))"""
-
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 md"---"
 
@@ -626,6 +623,14 @@ end
 if @isdefined he_data
 if !isnothing(he_data) 
 	html"""<center><h2 style = "font-family:Archivo Black"> Set initial parameter guess</h2></center>""" 
+end
+end
+
+# ╔═╡ 6fe5cea7-6573-426f-875e-066a0ed0cfde
+
+if @isdefined he_data
+if !isnothing(he_data)
+md"""Fit Model: $(@bind fit_model CheckBox(default = false))"""
 end
 end
 
