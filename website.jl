@@ -49,7 +49,7 @@ using Hyperelastics
 
 # ╔═╡ 73ab5774-dc3c-4759-92c4-7f7917c18cbf
 HTML("""<center><h1> Hyperelastic Model <br> Fitting Toolbox</h1></center>
-		<center><h2>Upload Uniaxial Test Data</h2></center>
+		<center><h2>Upload Test Data</h2></center>
 		<center><p style="color:red;"><b>This tool is currently in test mode. Please provide any feedback to <i>contact@vagusllc.com</i></b></p></center>
 		""")
 
@@ -62,8 +62,11 @@ HTML("""<center><h1> Hyperelastic Model <br> Fitting Toolbox</h1></center>
 md"""
 Test Type: $(@bind test_type Select([:Uniaxial, :Biaxial]))
 
-Upload Data $(@bind data FilePicker())
+Upload Data $(@bind data FilePicker([MIME("text/csv")]))
 """
+
+# ╔═╡ 6fe5cea7-6573-426f-875e-066a0ed0cfde
+md"""Fit Model: $(@bind fit_model CheckBox(default = false))"""
 
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 md"---"
@@ -468,7 +471,7 @@ begin
 	hyperelastic_models = filter(x -> typeof(getfield(Hyperelastics, x)) <: Union{DataType, UnionAll},ns)
 	hyperelastic_models = filter(x -> !(getfield(Hyperelastics, x) <: Hyperelastics.AbstractDataDrivenHyperelasticModel) && (getfield(Hyperelastics, x) <: Hyperelastics.AbstractHyperelasticModel), hyperelastic_models)
 	hyperelastic_models = filter(x -> !(x in exclude), hyperelastic_models)
-	map(model->parameters(model()), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models))
+	map(model->Hyperelastics.parameters(model()), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models))
 end;
 
 # ╔═╡ 7998136a-de3d-42f9-9028-1172415c8b75
@@ -548,8 +551,8 @@ if !isnothing(he_data)
 		f
 	elseif typeof(he_data) == HyperelasticBiaxialTest
 		f = Figure(resolution = 5.5 .*(200, 100), fonts = (;regular="Archivo Black"))
-		ax1 = Makie.Axis(f[1, 1], xlabel = "λ₁ - Stretch", ylabel = "Stress [$(stress_units)]")
-		ax2 = Makie.Axis(f[1, 2], xlabel = "λ₂ - Stretch", ylabel = "Stress [$(stress_units)]")
+		ax1 = Makie.Axis(f[1, 1], xlabel = "λ₁ - Stretch", ylabel = "Stress")
+		ax2 = Makie.Axis(f[1, 2], xlabel = "λ₂ - Stretch", ylabel = "Stress")
 		scatter!(
 			ax1, 
 			getindex.(he_data.data.λ, 1), 
@@ -658,7 +661,6 @@ function set_parameters(model,data)
 		]
 		md"""
 		$(inputs)
-		Fit Model: $(@bind fit_model CheckBox(default = false))
 		"""
 	end
 end;
@@ -877,6 +879,7 @@ end;
 # ╟─a75d209e-93cb-4b21-899e-4c567f0dfb09
 # ╟─c6e726ab-ea78-4129-a662-338976633cd5
 # ╟─703091d0-bf33-4baf-b75e-43e01b42ec0b
+# ╟─6fe5cea7-6573-426f-875e-066a0ed0cfde
 # ╟─08d775f2-94fc-4ca8-bcdd-e9535cfd129a
 # ╟─1018d35f-42e9-4970-8a5f-f5cc6e951cbc
 # ╟─0fa152b1-462a-4f34-9753-13ef6ef63071
@@ -888,7 +891,7 @@ end;
 # ╟─93e75cbf-946a-4244-a8ae-a54120169824
 # ╟─ea9f6a58-a5df-4a2e-aadd-5ff1107d8b55
 # ╟─e5a18d4c-14cd-11ed-36d5-69de0fd02830
-# ╠═2d189645-189f-4886-a6d5-5718a613798f
+# ╟─2d189645-189f-4886-a6d5-5718a613798f
 # ╟─d495c5e5-bf33-475c-a49a-5c9f8dc13789
 # ╟─e0e7407d-fe60-4583-8060-3ba38c22c409
 # ╟─7998136a-de3d-42f9-9028-1172415c8b75
