@@ -39,16 +39,17 @@ begin
 		Pkg.PackageSpec(name="DiffEqParamEstim"),
 		Pkg.PackageSpec(name="DynamicalSystems"),
 		Pkg.PackageSpec(name="MonteCarloMeasurements"),
-		Pkg.PackageSpec(name="Javis"),
+		# Pkg.PackageSpec(name="Javis"),
 		Pkg.PackageSpec(name="Colors"),
 		Pkg.PackageSpec(name="PlutoUI"),
-		Pkg.PackageSpec(name="JavisNB"),
+		# Pkg.PackageSpec(name="JavisNB"),
 		]
 	)
 	Pkg.develop([
 		Pkg.PackageSpec(path=joinpath(local_dir, "BondGraphs")),
 	])
-	using Unitful,Latexify, RecursiveArrayTools, LinearAlgebra, Distributions, ModelingToolkit, PlotlyLight, Surrogates, Measurements, DifferentialEquations, Animations, BlackBoxOptim, ControlSystems, Optim, MonteCarloMeasurements, BondGraphs, DataDrivenDiffEq, LaTeXStrings, DiffEqParamEstim, DynamicalSystems, Statistics, Javis,	Colors, PlutoUI, JavisNB
+	using Unitful,Latexify, RecursiveArrayTools, LinearAlgebra, Distributions, ModelingToolkit, PlotlyLight, Surrogates, Measurements, DifferentialEquations, Animations, BlackBoxOptim, ControlSystems, Optim, MonteCarloMeasurements, BondGraphs, DataDrivenDiffEq, LaTeXStrings, DiffEqParamEstim, DynamicalSystems, Statistics,	Colors, PlutoUI
+	using Javis, JavisNB
 end
 
 # ╔═╡ d3060600-ffd4-4668-925e-cc89e665ae39
@@ -1344,6 +1345,96 @@ md"""
 !!! warning "Try changing the problem parameters to test robustness of controllers"
 """
 
+# ╔═╡ 59cada5a-72ef-4574-ab04-b4d5eb8f6b74
+# ╠═╡ disabled = true
+#=╠═╡
+y_ff, y_fb, y_pid, y_lqr = let
+	## -------- Feedback Controller -------
+	C = ControlSystems.append(ss(tf([kfb_gain],[1, 0])), tf([1]))
+	OL = motor_ss*C
+	fb = ss(zeros(2,2),zeros(2, 1),zeros(2,2), [1, 0])
+	cl_fb = minreal(feedback(OL, fb))
+	fb_sim = Simulator(cl_fb, input)
+	fb_sol = solve(fb_sim, zeros(3), (0.0, t[end]), Tsit5())
+	y_fb = map(t->fb_sim.y(fb_sol(t), t)[1], t)
+	## ------ Feedforward Controller -------
+	kff = ss(tf([kff_gain], [1.0]))
+	cl_ff = ss(motor_tf*diagm([kff_gain, 1.0]))
+	ff_sim = Simulator(cl_ff, input)
+	ff_sol = solve(ff_sim, zeros(4), (0.0, t[end]))
+	y_ff = map(t->ff_sim.y(ff_sol(t), t)[1], t)
+	## ------ PID Controller -------
+	Gc = pid(kp = kp, ki = ki, kd = kd)|>minreal
+	Gp = motor_tf[1, 1]
+	Gd = motor_tf[1, 2]
+	OL = append(Gc*Gp, Gd)|>ss
+	comb = ss([0], [0 0], [0], [1 1])|>minreal
+	OL = series(OL, comb)|>minreal
+	CL = feedback(OL, ss([0], [0], [0; 0], [1;0]))|>minreal
+	pid_sim = Simulator(CL, input)
+	pid_sol = solve(pid_sim, zeros(3), (0.0, t[end]))
+	y_pid = map(t->pid_sim.y(pid_sol(t), t)[1], t)
+	## ---------- LQR Controller -------
+	motor_aug = [1; ss(tf([1], [1, 0]))]* motor_ss[1, 1]
+	R = float.(I(1))*0.01
+	Q =[Q11 Q12 Q13;Q12 Q22 Q23;Q13 Q23 Q33]
+	K_lqr = lqr(motor_aug, Q, R)
+	P = ss(motor_ss.A, motor_ss.B, vcat(motor_ss.C, [0 1], [1 0]), vcat(motor_ss.D, [0 0], [0 0]))
+	C = ss(K_lqr*ControlSystems.append(tf([1],[1, 0]), tf([1]), tf([1])))
+	OL = P * ControlSystems.append(C, tf([1]))
+	CL = feedback(OL, ss(I(3)), U1 = 1:3, U2=1:3)
+	cl_lqr = CL[1, 1:3:4]
+	lqr_sim = Simulator(cl_lqr, input)
+	lqr_sol = solve(lqr_sim, [0.0, 0.0, 0.0], (0.0, t[end]))
+	y_lqr = map(t->lqr_sim.y(lqr_sol(t), t)[1], t)
+	y_ff, y_fb, y_pid, y_lqr
+end;
+  ╠═╡ =#
+
+# ╔═╡ 433cf2d5-465f-45cc-a16d-cab455fb03fa
+# ╠═╡ disabled = true
+#=╠═╡
+let
+	p = Plot(Config())
+	
+	labels = ["Feedforward" "Feedback" "LQR" "PID"]
+	data = [y_ff, y_fb, y_lqr, y_pid]
+	map(i->push!(p.data, Config(
+		x=t,
+		y=data[i], 
+		name = labels[i],
+		mode = "lines", 
+		line = Config(color=PlotlyLight.Defaults.layout.x.template.layout.colorway[i])
+	)), 1:size(data,1))
+	push!(p.data, Config(
+		x = t,
+		y = ones(length(t)), 
+		name = "ω-setpoint"
+	))
+	push!(p.data, Config(
+		x = t, 
+		y = getindex.(input.(0.0, t), 2),
+		name = "Disturbance Torque"
+	))
+	p.layout.xaxis.title = "Time[s]"
+	p.layout.yaxis.title = "Angular Velocity [rad/s]"
+	p.layout.annotations = [
+			Config(
+				text = "Amplitude Ratio",
+				font = Config(size = 20),
+				showarrow=false,
+				align = "center",
+				x = 0.5,
+				xref = "paper",
+				y = 1.2,
+				yref = "paper",
+			)
+		]
+	# p.layout.margin.t = 50
+	p
+end
+  ╠═╡ =#
+
 # ╔═╡ e90c7cfe-88c0-4a2e-adb4-1f09e028de30
 md"""
 ## Example 5.2: Nonlinear System Analysis
@@ -2268,6 +2359,8 @@ let
 end
 
 # ╔═╡ 8cb4d629-489a-461a-b9ca-3492b434f15f
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	if render_animation
 	# Timestep size
@@ -2409,6 +2502,7 @@ let
 	JavisNB.embed(myvideo, pathname = "msd.gif", framerate = Int(round(1/dt)))
 end
 end
+  ╠═╡ =#
 
 # ╔═╡ b3c795a2-ec44-4bec-bb81-859c072cea1a
 ThreeColumn(HTML("m = "*string(m_val)),HTML("k = "*string(k_val)),HTML("b = "*string(b_val)))
@@ -2451,96 +2545,6 @@ TwoColumn(md"""
 
  $Q_{3,3}$ = $(@bind Q33 PlutoUI.Slider(1:200, show_value = true, default = 10.0))
 """)
-
-# ╔═╡ 59cada5a-72ef-4574-ab04-b4d5eb8f6b74
-# ╠═╡ disabled = true
-#=╠═╡
-y_ff, y_fb, y_pid, y_lqr = let
-	## -------- Feedback Controller -------
-	C = ControlSystems.append(ss(tf([kfb_gain],[1, 0])), tf([1]))
-	OL = motor_ss*C
-	fb = ss(zeros(2,2),zeros(2, 1),zeros(2,2), [1, 0])
-	cl_fb = minreal(feedback(OL, fb))
-	fb_sim = Simulator(cl_fb, input)
-	fb_sol = solve(fb_sim, zeros(3), (0.0, t[end]), Tsit5())
-	y_fb = map(t->fb_sim.y(fb_sol(t), t)[1], t)
-	## ------ Feedforward Controller -------
-	kff = ss(tf([kff_gain], [1.0]))
-	cl_ff = ss(motor_tf*diagm([kff_gain, 1.0]))
-	ff_sim = Simulator(cl_ff, input)
-	ff_sol = solve(ff_sim, zeros(4), (0.0, t[end]))
-	y_ff = map(t->ff_sim.y(ff_sol(t), t)[1], t)
-	## ------ PID Controller -------
-	Gc = pid(kp = kp, ki = ki, kd = kd)|>minreal
-	Gp = motor_tf[1, 1]
-	Gd = motor_tf[1, 2]
-	OL = append(Gc*Gp, Gd)|>ss
-	comb = ss([0], [0 0], [0], [1 1])|>minreal
-	OL = series(OL, comb)|>minreal
-	CL = feedback(OL, ss([0], [0], [0; 0], [1;0]))|>minreal
-	pid_sim = Simulator(CL, input)
-	pid_sol = solve(pid_sim, zeros(3), (0.0, t[end]))
-	y_pid = map(t->pid_sim.y(pid_sol(t), t)[1], t)
-	## ---------- LQR Controller -------
-	motor_aug = [1; ss(tf([1], [1, 0]))]* motor_ss[1, 1]
-	R = float.(I(1))*0.01
-	Q =[Q11 Q12 Q13;Q12 Q22 Q23;Q13 Q23 Q33]
-	K_lqr = lqr(motor_aug, Q, R)
-	P = ss(motor_ss.A, motor_ss.B, vcat(motor_ss.C, [0 1], [1 0]), vcat(motor_ss.D, [0 0], [0 0]))
-	C = ss(K_lqr*ControlSystems.append(tf([1],[1, 0]), tf([1]), tf([1])))
-	OL = P * ControlSystems.append(C, tf([1]))
-	CL = feedback(OL, ss(I(3)), U1 = 1:3, U2=1:3)
-	cl_lqr = CL[1, 1:3:4]
-	lqr_sim = Simulator(cl_lqr, input)
-	lqr_sol = solve(lqr_sim, [0.0, 0.0, 0.0], (0.0, t[end]))
-	y_lqr = map(t->lqr_sim.y(lqr_sol(t), t)[1], t)
-	y_ff, y_fb, y_pid, y_lqr
-end;
-  ╠═╡ =#
-
-# ╔═╡ 433cf2d5-465f-45cc-a16d-cab455fb03fa
-# ╠═╡ disabled = true
-#=╠═╡
-let
-	p = Plot(Config())
-	
-	labels = ["Feedforward" "Feedback" "LQR" "PID"]
-	data = [y_ff, y_fb, y_lqr, y_pid]
-	map(i->push!(p.data, Config(
-		x=t,
-		y=data[i], 
-		name = labels[i],
-		mode = "lines", 
-		line = Config(color=PlotlyLight.Defaults.layout.x.template.layout.colorway[i])
-	)), 1:size(data,1))
-	push!(p.data, Config(
-		x = t,
-		y = ones(length(t)), 
-		name = "ω-setpoint"
-	))
-	push!(p.data, Config(
-		x = t, 
-		y = getindex.(input.(0.0, t), 2),
-		name = "Disturbance Torque"
-	))
-	p.layout.xaxis.title = "Time[s]"
-	p.layout.yaxis.title = "Angular Velocity [rad/s]"
-	p.layout.annotations = [
-			Config(
-				text = "Amplitude Ratio",
-				font = Config(size = 20),
-				showarrow=false,
-				align = "center",
-				x = 0.5,
-				xref = "paper",
-				y = 1.2,
-				yref = "paper",
-			)
-		]
-	# p.layout.margin.t = 50
-	p
-end
-  ╠═╡ =#
 
 # ╔═╡ a51db68b-4223-467b-8913-2df443b65f08
 let
@@ -2856,7 +2860,7 @@ end
 # ╟─3e43d179-ec6a-42dc-b25f-e651ccfca429
 # ╟─f9f57858-01c5-49b5-a718-a0af8f34eb3c
 # ╟─0ddd71bc-ea00-4cb0-838a-7b51f702ca6b
-# ╟─8cb4d629-489a-461a-b9ca-3492b434f15f
+# ╠═8cb4d629-489a-461a-b9ca-3492b434f15f
 # ╟─832be2af-d3e7-45d1-be8e-05a210c4173d
 # ╟─bff336f2-ce8d-4653-b417-3d70f121232d
 # ╟─cac617ec-48eb-49ae-83a1-8b68658170d0
@@ -2921,7 +2925,7 @@ end
 # ╟─636d0760-4d33-4e28-99f1-040a0748c799
 # ╟─a1b21817-ea48-4002-a80f-1960e5d12d54
 # ╟─a21b4b2a-96f2-4168-96ca-0666055975c7
-# ╟─511a9463-65eb-4ac0-baff-f8c386638c54
+# ╠═511a9463-65eb-4ac0-baff-f8c386638c54
 # ╟─a81168cd-eb9c-47d9-bdc3-bd2a2566a273
 # ╟─f7af0b08-66f1-4b3f-aca5-2291f8d18306
 # ╟─3844323c-8579-409c-a7bd-5b423b8c610b
