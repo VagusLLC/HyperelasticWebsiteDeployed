@@ -68,6 +68,9 @@ Upload Data $(@bind data FilePicker([MIME("text/csv")]))
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
 md"---"
 
+# ╔═╡ 6594b0ff-d630-41fd-a5cd-076f0b478c3a
+
+
 # ╔═╡ 9e411ed3-0061-4831-b047-44c920959c83
 HTML("""
 <style>
@@ -891,6 +894,7 @@ end;
 # ╟─1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╟─9441279c-49d9-4640-aca5-4576e6ee29ed
 # ╟─7196aa51-e86d-4f0e-ae40-cc6aa74aa237
+# ╠═6594b0ff-d630-41fd-a5cd-076f0b478c3a
 # ╟─9e411ed3-0061-4831-b047-44c920959c83
 # ╟─36cf277a-2683-43b2-a406-7eb8a0fcac07
 # ╟─93e75cbf-946a-4244-a8ae-a54120169824
