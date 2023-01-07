@@ -2453,6 +2453,8 @@ TwoColumn(md"""
 """)
 
 # ╔═╡ 59cada5a-72ef-4574-ab04-b4d5eb8f6b74
+# ╠═╡ disabled = true
+#=╠═╡
 y_ff, y_fb, y_pid, y_lqr = let
 	## -------- Feedback Controller -------
 	C = ControlSystems.append(ss(tf([kfb_gain],[1, 0])), tf([1]))
@@ -2494,8 +2496,11 @@ y_ff, y_fb, y_pid, y_lqr = let
 	y_lqr = map(t->lqr_sim.y(lqr_sol(t), t)[1], t)
 	y_ff, y_fb, y_pid, y_lqr
 end;
+  ╠═╡ =#
 
 # ╔═╡ 433cf2d5-465f-45cc-a16d-cab455fb03fa
+# ╠═╡ disabled = true
+#=╠═╡
 let
 	p = Plot(Config())
 	
@@ -2535,6 +2540,7 @@ let
 	# p.layout.margin.t = 50
 	p
 end
+  ╠═╡ =#
 
 # ╔═╡ a51db68b-4223-467b-8913-2df443b65f08
 let
@@ -2868,7 +2874,7 @@ end
 # ╟─cb3f9e19-0ca0-41a3-b60a-c8a24543e05d
 # ╟─59cada5a-72ef-4574-ab04-b4d5eb8f6b74
 # ╟─b6f89c8d-dd75-47fa-adff-542f6a9948e4
-# ╟─433cf2d5-465f-45cc-a16d-cab455fb03fa
+# ╠═433cf2d5-465f-45cc-a16d-cab455fb03fa
 # ╟─e90c7cfe-88c0-4a2e-adb4-1f09e028de30
 # ╟─21a3f32a-b66a-4fbc-9358-958bc5960611
 # ╟─a51db68b-4223-467b-8913-2df443b65f08
@@ -2893,9 +2899,9 @@ end
 # ╟─db62accd-623e-41b4-aa1c-347ddfa1335c
 # ╟─47a83bd1-8f2f-4c3e-94c9-d899769b1ae9
 # ╟─6d187607-71a3-4524-96f9-73fd6dd98c46
-# ╠═3df3f656-0737-4606-84d9-db214d44bf44
+# ╟─3df3f656-0737-4606-84d9-db214d44bf44
 # ╟─49f0d0ee-703d-4995-b51e-946822415e12
-# ╠═9ba77432-a5e3-4f79-94da-f034a8976aff
+# ╟─9ba77432-a5e3-4f79-94da-f034a8976aff
 # ╟─45c057fc-473e-4864-9ade-47f4a0e0d154
 # ╟─8fe705ed-4085-411c-bbfc-ac99e47ea57d
 # ╟─66a2687c-af4d-4155-a332-8e9faeeae4b5
