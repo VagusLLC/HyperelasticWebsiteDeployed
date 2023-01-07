@@ -14,15 +14,6 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 20f1c638-5cec-11ec-2a1c-899c59354ba8
-begin
-	import Pkg
-	dev = Pkg.develop
-	local_dir = joinpath(splitpath(@__FILE__)[1:end-1])
-	dev([Pkg.PackageSpec(path=joinpath(local_dir, "BondGraphs"))])
-	using BondGraphs
-end
-
 # ╔═╡ 40676685-a013-4876-9d51-cbf83461ce75
 using Unitful
 
@@ -86,6 +77,15 @@ using Statistics
 
 # ╔═╡ f071ac10-fe88-4af1-baa2-2d30a0a3af76
 using Javis
+
+# ╔═╡ 20f1c638-5cec-11ec-2a1c-899c59354ba8
+begin
+	import Pkg
+	dev = Pkg.develop
+	local_dir = joinpath(splitpath(@__FILE__)[1:end-1])
+	dev([Pkg.PackageSpec(path=joinpath(local_dir, "BondGraphs"))])
+	using BondGraphs
+end
 
 # ╔═╡ 0db7c33a-db7a-4c2f-bae2-c54d6e68435e
 using Colors
@@ -3084,7 +3084,7 @@ version = "0.6.2"
 
 [[deps.BondGraphs]]
 deps = ["DifferentialEquations", "FileIO", "GraphIO", "Graphs", "LinearAlgebra", "MetaGraphs", "ModelingToolkit", "SymbolicUtils", "Symbolics"]
-path = "/home/carson/.julia/dev/BondGraphs"
+path = "/home/carson/research/Vagus/HyperelasticWebsiteDeployed/BondGraphs"
 uuid = "81b6dc42-80d7-44f0-b878-76c33e6b41d1"
 version = "0.1.5"
 
@@ -3399,7 +3399,6 @@ version = "2.4.1"
 
 [[deps.DelimitedFiles]]
 deps = ["Mmap"]
-git-tree-sha1 = "9e2f36d3c96a820c678f2f1f1782582fcf685bae"
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[deps.DensityInterface]]
