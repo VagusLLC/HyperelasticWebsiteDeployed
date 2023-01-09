@@ -40,7 +40,6 @@ begin
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		# Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
 	])
-	using Revise
 	using PlutoUI, AbstractDifferentiation, ForwardDiff, CSV, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication, HypertextLiteral
 end
 
