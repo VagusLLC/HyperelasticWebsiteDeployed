@@ -19,7 +19,10 @@ exclude = [
     "PlutoUI/src/TerminalNotebook.jl",
     "PlutoUI/src/TransformedValue.jl",
     "PlutoUI/src/WebcamInput.jl",
-    "PlutoUI/src/Wrapped.jl"
+    "PlutoUI/src/Wrapped.jl",
+    "Viscoelastics/examples/BBModel.jl",
+    "Hyperelastics/docs/examples/website.jl",
+    "website_viscoelastics.jl",
 ]
 
 [SliderServer]

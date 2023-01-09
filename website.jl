@@ -40,6 +40,7 @@ begin
 		Pkg.PackageSpec(path=joinpath(local_dir, "Hyperelastics")),
 		# Pkg.PackageSpec(path=joinpath(local_dir, "PlutoUI")),
 	])
+	using Revise
 	using PlutoUI, AbstractDifferentiation, ForwardDiff, CSV, ComponentArrays, DataFrames, Optimization, OptimizationOptimJL, InverseLangevinApproximations, LabelledArrays, CairoMakie, MakiePublication, HypertextLiteral
 end
 
@@ -697,24 +698,48 @@ if !isnothing(he_data)
 end
 end;
 
-# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
-if @isdefined he_data
+# ╔═╡ 86f7e74f-c0a9-4561-85b9-f3ed6559facc
+function ShearModulus(ψ, ps; adb = AD.ForwardDiffBackend())
+	s(x) = AD.gradient(adb,x->StrainEnergyDensity(ψ, x, ps), x)[1][1]-AD.gradient(adb,x->StrainEnergyDensity(ψ, x, ps), x)[1][3]*x[3]
+	AD.gradient(adb,y->s(y)[1], [1.0, 1.0, 1.0])[1][1]
+end;
+
+# ╔═╡ 8ea07dab-06dc-456d-9769-5e9c3980a777
+ElasticModulus(ψ, ps) = ShearModulus(ψ, ps)*3;
+
+# ╔═╡ bcf0c08c-cc7a-4785-a87b-2be47633eb85
+function model_note(ψ::Gent)
+	return (
+	μ = "Small strain shear modulus",
+	Jₘ = "Limiting Stretch Invariant"
+	)
+end;
+
+# ╔═╡ c91bc6e2-d046-47fe-8e90-b000fcbf3b8a
+function fit_parameters(he_data, p₀, model, parsed, fit_model)
 	if !isnothing(he_data)
 		if parsed && fit_model
 			ψ = getfield(Hyperelastics, Symbol(model))()
 			heprob = HyperelasticProblem(ψ, he_data, p₀)
+			if !(isnothing(heprob))
 			opt = getfield(OptimizationOptimJL, optimizer)()
 			solution = solve(heprob, opt)
 			sol = NamedTuple(solution.u)
+			return sol
+			end
 		end
 	end
 end;
+
+# ╔═╡ 1018d35f-42e9-4970-8a5f-f5cc6e951cbc
+(@isdefined he_data) ? (sol = fit_parameters(he_data, p₀, model, parsed, fit_model);) : ();
 
 # ╔═╡ 0fa152b1-462a-4f34-9753-13ef6ef63071
 if @isdefined he_data
 	if !isnothing(he_data)
 		if !(isnothing(ps))
 			if @isdefined sol
+				if !(isnothing(sol))
 			str_table = let
 				_str = "<span>"
 				columns = string.(parameters(getfield(Hyperelastics, model)()))
@@ -735,6 +760,7 @@ if @isdefined he_data
 				_str *= """</span>"""
 			end
 			HTML(str_table)
+				end
 			end
 		end
 	end
@@ -746,128 +772,110 @@ if @isdefined he_data
 	if !isnothing(he_data)
 		if parsed && fit_model
 			if @isdefined sol
-		ψ = getfield(Hyperelastics, Symbol(model))()
-		ŷ = predict(ψ, he_data, sol)
-		if typeof(he_data) == HyperelasticUniaxialTest
-			Δs₁₃ = getindex.(ŷ.data.s, 1)
-			λ₁ = getindex.(ŷ.data.λ, 1)
-			s₁ = getindex.(he_data.data.s, 1)
-			f = Figure()
-			ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress")
-			s1 = scatter!(
-				ax,
-				λ₁,s₁,
-			)
-			l1 = lines!(
-				ax,
-				λ₁,
-				Δs₁₃, 
-				color = MakiePublication.seaborn_muted()[2],
-			)
-			axislegend(ax, [[s1], [l1]], ["Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
-			f[1,1] = ax
-			f
-		elseif typeof(he_data) == HyperelasticBiaxialTest
-			Δs₁₃ = getindex.(ŷ.data.s, 1)
-			Δs₂₃ = getindex.(ŷ.data.s, 2)
-			λ₁ = getindex.(ŷ.data.λ, 1)
-			λ₂ = getindex.(ŷ.data.λ, 2)
-			s₁ = getindex.(he_data.data.s, 1)
-			s₂ = getindex.(he_data.data.s, 2)
-			fig = Figure(resolution = 5.5.*(200, 100))
-			ax1 = CairoMakie.Axis(fig[1,1],xlabel = "λ₁ Stretch", ylabel = "Stress")
-			ax2 = CairoMakie.Axis(fig[1,2],xlabel = "λ₂ Stretch", ylabel = "Stress")
-			s11 = scatter!(
-				ax1,
-				λ₁,s₁,
-			)
-			s12 = scatter!(
-				ax1,
-				λ₁,s₂,
-			)
-			l11 = lines!(
-				ax1,
-				λ₁,
-				Δs₁₃, 
-				# color = MakiePublication.seaborn_muted()[2],
-			)
-			l12 = lines!(
-				ax1,
-				λ₁,
-				Δs₂₃, 
-				# color = MakiePublication.seaborn_muted()[2],
-			)
-			s21 = scatter!(
-				ax2,
-				λ₂,s₁,
-			)
-			s22 = scatter!(
-				ax2,
-				λ₂,s₂,
-			)
-			l21 = lines!(
-				ax2,
-				λ₂,
-				Δs₁₃, 
-			)
-			l22 = lines!(
-				ax2,
-				λ₂,
-				Δs₂₃, 
-			)
-			axislegend(ax1, [[s11], [s12], [l11], [l12]], [
-				"Experimental - 1", 
-				"Experimental - 2", 
-				split(string(typeof(ψ)), ".")[2]*" - 1",
-				split(string(typeof(ψ)), ".")[2]*" - 2",
-			], position = :lt)
-			axislegend(ax2, [[s21], [s22], [l21], [l22]], [
-				"Experimental - 1", 
-				"Experimental - 2", 
-				split(string(typeof(ψ)), ".")[2]*" - 1",
-				split(string(typeof(ψ)), ".")[2]*" - 2",
-			], position = :lt)
-			fig
-		end
-
-		end
+				if !(isnothing(sol))
+				ψ = getfield(Hyperelastics, Symbol(model))()
+				ŷ = predict(ψ, he_data, sol)
+				if typeof(he_data) == HyperelasticUniaxialTest
+					Δs₁₃ = getindex.(ŷ.data.s, 1)
+					λ₁ = getindex.(ŷ.data.λ, 1)
+					s₁ = getindex.(he_data.data.s, 1)
+					f = Figure()
+					ax = CairoMakie.Axis(f,xlabel = "Stretch", xticks = 1:maximum(df[!, stretch_column]), ylabel = "Stress")
+					s1 = scatter!(
+						ax,
+						λ₁,s₁,
+					)
+					l1 = lines!(
+						ax,
+						λ₁,
+						Δs₁₃, 
+						color = MakiePublication.seaborn_muted()[2],
+					)
+					axislegend(ax, [[s1], [l1]], ["Experimental", split(string(typeof(ψ)), ".")[2]], position = :lt)
+					f[1,1] = ax
+					f
+				elseif typeof(he_data) == HyperelasticBiaxialTest
+					Δs₁₃ = getindex.(ŷ.data.s, 1)
+					Δs₂₃ = getindex.(ŷ.data.s, 2)
+					λ₁ = getindex.(ŷ.data.λ, 1)
+					λ₂ = getindex.(ŷ.data.λ, 2)
+					s₁ = getindex.(he_data.data.s, 1)
+					s₂ = getindex.(he_data.data.s, 2)
+					fig = Figure(resolution = 5.5.*(200, 100))
+					ax1 = CairoMakie.Axis(fig[1,1],xlabel = "λ₁ Stretch", ylabel = "Stress")
+					ax2 = CairoMakie.Axis(fig[1,2],xlabel = "λ₂ Stretch", ylabel = "Stress")
+					s11 = scatter!(
+						ax1,
+						λ₁,s₁,
+					)
+					s12 = scatter!(
+						ax1,
+						λ₁,s₂,
+					)
+					l11 = lines!(
+						ax1,
+						λ₁,Δs₁₃, 
+						# color = MakiePublication.seaborn_muted()[2],
+					)
+					l12 = lines!(
+						ax1,
+						λ₁,Δs₂₃, 
+						# color = MakiePublication.seaborn_muted()[2],
+					)
+					s21 = scatter!(
+						ax2,
+						λ₂,s₁,
+					)
+					s22 = scatter!(
+						ax2,
+						λ₂,s₂,
+					)
+					l21 = lines!(
+						ax2,
+						λ₂,	Δs₁₃, 
+					)
+					l22 = lines!(
+						ax2,
+						λ₂, Δs₂₃, 
+					)
+					axislegend(ax1, [[s11], [s12], [l11], [l12]], [
+						"Experimental - 1", 
+						"Experimental - 2", 
+						split(string(typeof(ψ)), ".")[2]*" - 1",
+						split(string(typeof(ψ)), ".")[2]*" - 2",
+					], position = :lt)
+					axislegend(ax2, [[s21], [s22], [l21], [l22]], [
+						"Experimental - 1", 
+						"Experimental - 2", 
+						split(string(typeof(ψ)), ".")[2]*" - 1",
+						split(string(typeof(ψ)), ".")[2]*" - 2",
+					], position = :lt)
+					fig
+					end
+				end
+				end
+			end
 		end
 	end
 end
-end
-
-# ╔═╡ 86f7e74f-c0a9-4561-85b9-f3ed6559facc
-function ShearModulus(ψ, ps; adb = AD.ForwardDiffBackend())
-	s(x) = AD.gradient(adb,x->StrainEnergyDensity(ψ, x, ps), x)[1][1]-AD.gradient(adb,x->StrainEnergyDensity(ψ, x, ps), x)[1][3]*x[3]
-	AD.gradient(adb,y->s(y)[1], [1.0, 1.0, 1.0])[1][1]
-end;
-
-# ╔═╡ 8ea07dab-06dc-456d-9769-5e9c3980a777
-ElasticModulus(ψ, ps) = ShearModulus(ψ, ps)*3;
 
 # ╔═╡ 9441279c-49d9-4640-aca5-4576e6ee29ed
 if @isdefined he_data
 if !isnothing(he_data) && fit_model && @isdefined sol
 	if parsed && !isnothing(he_data)
+		if !(isnothing(sol))
 		HTML("""
 		<center><h2  style = "font-family:Archivo Black"> Other Values </h2></center>
 		<p  style = "font-family:Archivo Black">
-		Small Strain Shear Modulus: $(round(ShearModulus(ψ, sol), digits = 3))
+		Small Strain Shear Modulus: $(round(ShearModulus(getfield(Hyperelastics, Symbol(model))(), sol), digits = 3))
 		<br>
-		Small Strain Elastic Modulus: $(round(ElasticModulus(ψ, sol), digits = 3))
+		Small Strain Elastic Modulus: $(round(ElasticModulus(getfield(Hyperelastics, Symbol(model))(), sol), digits = 3))
 		</p>
 		""")
+		end
 	end
 end
 end
-
-# ╔═╡ bcf0c08c-cc7a-4785-a87b-2be47633eb85
-function model_note(ψ::Gent)
-	return (
-	μ = "Small strain shear modulus",
-	Jₘ = "Limiting Stretch Invariant"
-	)
-end;
 
 # ╔═╡ Cell order:
 # ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
@@ -906,3 +914,4 @@ end;
 # ╟─86f7e74f-c0a9-4561-85b9-f3ed6559facc
 # ╟─8ea07dab-06dc-456d-9769-5e9c3980a777
 # ╟─bcf0c08c-cc7a-4785-a87b-2be47633eb85
+# ╟─c91bc6e2-d046-47fe-8e90-b000fcbf3b8a

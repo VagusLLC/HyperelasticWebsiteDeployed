@@ -1,0 +1,9 @@
+{
+    "README": "/doc/README.md",
+    "Examples" : {
+        "Basics": "/doc/docs/examples/basics.md"
+    },
+    "Reference": {
+        "Module": "/ref/Viscoelastics"
+    }
+}

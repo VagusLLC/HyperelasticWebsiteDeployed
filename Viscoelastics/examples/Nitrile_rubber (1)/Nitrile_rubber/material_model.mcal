@@ -1,0 +1,63 @@
+# File created by MCalibration on Tue Jan 29 21:57:01 2013
+version = 2.2.2
+
+Loadcase
+    name = nitrile01
+    fileName = nitrile01.txt
+    predicted_line_color = ff0000
+    predicted_line_width = 2.1
+    predicted_line_style = dash
+    experimental_line_width = 2.1
+
+Loadcase
+    name = nitrile02
+    fileName = nitrile02.txt
+    predicted_line_color = 04ff00
+    predicted_line_width = 2.1
+    predicted_line_style = dash
+    experimental_line_color = 04ff00
+    experimental_line_width = 2.1
+
+Loadcase
+    name = nitrile03
+    fileName = nitrile03.txt
+    predicted_line_color = 0004ff
+    predicted_line_width = 2.1
+    predicted_line_style = dash
+    experimental_line_color = 0004ff
+    experimental_line_width = 2.1
+
+Material_Model = Bergstrom-Boyce
+#  ParameterName          value   opt      minVal    maxVal
+              mu        1.11973     1          0          -
+         lambdaL        9.91239     2          1         10
+           kappa            500     0          0          -
+               s        5.22257     4          0          -
+              xi         0.0001     0          0          1
+               C       -1.85192     6         -2          0
+         tauBase       0.395728     7          0          -
+               m        12.0151     8        1.1        100
+          tauCut           0.01     0          0          1
+
+materialName = MCalibration material
+materialDescription = Calibrated with MCalibration
+materialDensity = 1e-09
+xAxisQuantity = Engineering Strain
+yAxisQuantity = Engineering Stress [MPa]
+Comment-Start
+Optimization Results [2013-01-29T21:27:51]
+   Run Time: 00:18:33
+   Function Evaluations: 420
+   Best Fitness (NMAD): 4.72427
+   Opt Method: Nelder-Mead (50)
+
+Optimization Results [2013-01-29T21:56:58]
+   Run Time: 00:28:33
+   Function Evaluations: 622
+   Best Fitness (NMAD): 4.68614
+   Opt Method: Nelder-Mead (100)
+Comment-End
+Unit_Length = millimeter
+Unit_Force = Newton
+Unit_Time = seconds
+Unit_Temp = Kelvin
