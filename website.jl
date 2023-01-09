@@ -54,16 +54,38 @@ HTML("""<center><h1> Hyperelastic Model <br> Fitting Toolbox</h1></center>
 		<center><p style="color:red;"><b>This tool is currently in test mode. Please provide any feedback to <i>contact@vagusllc.com</i></b></p></center>
 		""")
 
-# ╔═╡ cac1e660-c03b-420a-b9bc-b4d4712ae325
-# md"""
-# Select data: $(@bind data_type Select([:Custom => "User Provided"], default = :Custom))
-# """
-
 # ╔═╡ 692b1d0d-2353-4931-b289-490f74988811
 md"""
 Test Type: $(@bind test_type Select([:Uniaxial, :Biaxial]))
 
 Upload Data $(@bind data FilePicker([MIME("text/csv")]))
+"""
+
+# ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
+HTML("""<center><h3 >Verification Plot</h3></center>""") 
+
+# ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
+HTML("""<center><h2 >Select Hyperelastic Model</h2></center>""") 
+
+# ╔═╡ 9343a51e-5002-4489-a55f-12c49f5b8cf3
+md"""
+!!! note "Note"
+	- When selecting a phenomenological model, be aware that using higher order models may result in overfitting of the data.
+	- All moduli in models are in the defined stress units above
+"""
+
+# ╔═╡ da3634ea-48d7-4d4f-a853-c631a6fa7bf4
+html"""<center><h3 > Model Information</h3></center>""" 
+
+# ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
+html"""<center><h2 style = "font-family:Archivo Black"> Set initial parameter guess</h2></center>""" 
+
+# ╔═╡ 6fe5cea7-6573-426f-875e-066a0ed0cfde
+md"""Fit Model: $(@bind fit_model CheckBox(default = false))"""
+
+# ╔═╡ 08d775f2-94fc-4ca8-bcdd-e9535cfd129a
+md"""
+Optimizer: $(@bind optimizer Select([:LBFGS, :BFGS, :NelderMead])) - *If parameters are not converging, try using a different optimizer or changing your initial guess*
 """
 
 # ╔═╡ 7196aa51-e86d-4f0e-ae40-cc6aa74aa237
@@ -472,6 +494,12 @@ begin
 	map(model->Hyperelastics.parameters(model()), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models))
 end;
 
+# ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
+@bind model Select(hyperelastic_models) 
+
+# ╔═╡ a75d209e-93cb-4b21-899e-4c567f0dfb09
+eval(:(@doc $(getfield(Hyperelastics, model)())))
+
 # ╔═╡ 7998136a-de3d-42f9-9028-1172415c8b75
 	if !isnothing(data)
 		df = CSV.read(data["data"], DataFrame);
@@ -523,13 +551,6 @@ begin
 		end
 	# map(model->Hyperelastics.parameter_bounds(model(), he_data), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models));
 end;
-
-# ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
-if @isdefined he_data
-	if !isnothing(he_data) 
-		HTML("""<center><h3 >Verification Plot</h3></center>""") 
-	end
-end
 
 # ╔═╡ 2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 let
@@ -583,67 +604,6 @@ end
 end
 end
 
-# ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
-if @isdefined he_data
-	if !isnothing(he_data)
-		HTML("""<center><h2 >Select Hyperelastic Model</h2></center>""") 
-	end
-end
-
-# ╔═╡ 9343a51e-5002-4489-a55f-12c49f5b8cf3
-if @isdefined he_data
-if !isnothing(he_data)
-md"""
-!!! note "Note"
-	- When selecting a phenomenological model, be aware that using higher order models may result in overfitting of the data.
-	- All moduli in models are in the defined stress units above
-"""
-end
-end
-
-# ╔═╡ 2f1fde4b-6bd8-42b4-bf5c-d61006d55f10
-if @isdefined he_data
-if !isnothing(he_data) 
-	@bind model Select(hyperelastic_models) 
-end
-end
-
-# ╔═╡ da3634ea-48d7-4d4f-a853-c631a6fa7bf4
-if @isdefined he_data
-if !isnothing(he_data) 
-	html"""<center><h3 > Model Information</h3></center>""" 
-end
-end
-
-# ╔═╡ a75d209e-93cb-4b21-899e-4c567f0dfb09
-if @isdefined he_data
-	if !isnothing(he_data) eval(:(@doc $(getfield(Hyperelastics, model)()))) end
-end
-
-# ╔═╡ c6e726ab-ea78-4129-a662-338976633cd5
-if @isdefined he_data
-if !isnothing(he_data) 
-	html"""<center><h2 style = "font-family:Archivo Black"> Set initial parameter guess</h2></center>""" 
-end
-end
-
-# ╔═╡ 6fe5cea7-6573-426f-875e-066a0ed0cfde
-
-if @isdefined he_data
-if !isnothing(he_data)
-md"""Fit Model: $(@bind fit_model CheckBox(default = false))"""
-end
-end
-
-# ╔═╡ 08d775f2-94fc-4ca8-bcdd-e9535cfd129a
-if @isdefined he_data
-if !isnothing(he_data) 
-md"""
-Optimizer: $(@bind optimizer Select([:LBFGS, :BFGS, :NelderMead])) - *If parameters are not converging, try using a different optimizer or changing your initial guess*
-"""
-end
-end
-
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
 function set_parameters(model,data)
 	ψ = getfield(Hyperelastics, model)()
@@ -673,9 +633,9 @@ end;
 
 # ╔═╡ 703091d0-bf33-4baf-b75e-43e01b42ec0b
 if @isdefined he_data
-if !isnothing(he_data)
-	@bind ps set_parameters(model, he_data)
-end
+	if !isnothing(he_data)
+		@bind ps set_parameters(model, he_data)
+	end
 end
 
 # ╔═╡ d0713eb0-fe75-4ea4-bf20-2d4e9b722da5
@@ -880,7 +840,6 @@ end
 # ╔═╡ Cell order:
 # ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
-# ╟─cac1e660-c03b-420a-b9bc-b4d4712ae325
 # ╟─692b1d0d-2353-4931-b289-490f74988811
 # ╟─69068002-ca3a-4e19-9562-6736d3b15dea
 # ╟─f12538a9-f595-4fae-b76c-078179bc5109
