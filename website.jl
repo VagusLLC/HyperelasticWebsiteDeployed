@@ -19,6 +19,7 @@ end
 begin
 	local_dir = joinpath(splitpath(@__FILE__)[1:end-1])
 	import Pkg
+	
 	Pkg.activate(mktempdir())
 	Pkg.add([
 		Pkg.PackageSpec(name="CairoMakie"),
