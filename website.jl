@@ -537,25 +537,30 @@ end
 
 # ╔═╡ 12256359-1dca-4a71-a225-66994e2dfd66
 begin
+	if test_type == :Uniaxial
 		if !isnothing(data)
-			if test_type == :Uniaxial
-				he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = "experimental");
-			elseif test_type == :Biaxial
-				he_data = HyperelasticBiaxialTest(
+			he_data = HyperelasticUniaxialTest(df[!, stretch_column],df[!, stress_column],  name = "experimental");
+		else 
+			he_data = HyperelasticUniaxialTest([1.0],[0.0], name="empty")
+		end
+	elseif test_type == :Biaxial
+		if !isnothing(data)
+			he_data = HyperelasticBiaxialTest(
 					df[!, stretch1_column],
 					df[!, stretch2_column],
 					df[!, stress1_column],
 					df[!, stress2_column], 
 					name = "experimental");
-			end
+		else 
+			he_data = HyperelasticBiaxialTest([1.0],[1.0],[0.0],[0.0], name="empty")
 		end
+	end
 	# map(model->Hyperelastics.parameter_bounds(model(), he_data), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models));
 end;
 
 # ╔═╡ 2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 let
-if @isdefined he_data
-if !isnothing(he_data)
+	if he_data.name != "empty"
 	if typeof(he_data) == HyperelasticUniaxialTest
 		f, ax, p = scatter(
 			getindex.(he_data.data.λ, 1), 
@@ -600,8 +605,7 @@ if !isnothing(he_data)
 		axislegend(ax2, position = :lt)
 		f
 	end
-end
-end
+	end
 end
 
 # ╔═╡ 4d6f03c0-203a-4536-8ca2-c3dd77182ce6
