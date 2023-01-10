@@ -65,74 +65,6 @@ Upload Data $(@bind data FilePicker([MIME("text/csv")]))
 # ╔═╡ f12538a9-f595-4fae-b76c-078179bc5109
 HTML("""<center><h3 >Verification Plot</h3></center>""") 
 
-# ╔═╡ d413c71f-7551-47d8-aea1-8af3a8769ca0
-function UniaxialPlot(he_data, names; modes = ["markers"])
-	p = Plot()
-	layout = Config(
-		template = PlotlyLight.template("simple_white"),
-		grid = Config(rows = 1, columns = 1, pattern = "independent")
-	)	
-	for (i,data) in enumerate(he_data)
-		p(
-			x = getindex.(data.data.λ, 1),
-			y = getindex.(data.data.s, 1),
-			name = names[i],
-			type = "scatter",
-			mode = modes[i],
-		)	
-	end
-	p.layout = layout
-	p.layout.xaxis.title = "Stretch [-]"
-	p.layout.yaxis.title = "Stress"
-	p
-end
-
-# ╔═╡ f44d3d0b-2023-4f5d-a8b6-a8c57bf2ee64
-function BiaxialPlot(he_data, names1, names2; modes = ["markers"])
-	layout = Config(
-		template = PlotlyLight.template("simple_white"),
-		grid = Config(rows = 1, columns = 2, pattern = "independent")
-	)
-	p = Plot()
-	for (i,data) in enumerate(he_data)
-		p(
-			x = getindex.(data.data.λ, 1),
-			y = getindex.(data.data.s, 1),
-			name = names1[i],
-			type = "scatter",
-			mode = modes[i],
-		)(
-			x = getindex.(data.data.λ, 1),
-			y = getindex.(data.data.s, 2),
-			name = names2[i],
-			type = "scatter",
-			mode = modes[i],
-		)(
-			x = getindex.(data.data.λ, 2),
-			y = getindex.(data.data.s, 1),
-			xaxis = "x2",
-			yaxis = "y2",
-			name = names1[i],
-			type = "scatter",
-			mode = modes[i],
-		)(
-			x = getindex.(data.data.λ, 2),
-			y = getindex.(data.data.s, 2),
-			xaxis = "x2",
-			yaxis = "y2",
-			name = names2[i],
-			type = "scatter",
-			mode = modes[i],
-		)
-	end
-		p.layout = layout
-		p.layout.xaxis.title = "λ₁ Stretch [-]"
-		p.layout.yaxis.title = "Stress"
-		p.layout.xaxis2.title = "λ₂ Stretch [-]"
-		p.layout.yaxis2.title = "Stress"
-		p
-end
-
 # ╔═╡ d0319d95-f335-48fa-b789-59daf9a0f1a4
 HTML("""<center><h2 >Select Hyperelastic Model</h2></center>""") 
 
@@ -627,15 +559,9 @@ begin
 	# map(model->Hyperelastics.parameter_bounds(model(), he_data), Base.Fix1(getfield, Hyperelastics).( hyperelastic_models));
 end;
 
-# ╔═╡ 0ff26acb-a790-48b7-ab8d-6889c0e409ac
-if typeof(he_data) == HyperelasticUniaxialTest
-	UniaxialPlot([he_data],["Experimental"])
-elseif typeof(he_data) == HyperelasticBiaxialTest
-	BiaxialPlot([he_data], ["Experimental - 1"], ["Experimental - 2"])
-end
-
 # ╔═╡ 2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 # ╠═╡ disabled = true
+# ╠═╡ skip_as_script = true
 #=╠═╡
 let
 	if he_data.name != "empty"
@@ -821,34 +747,9 @@ if @isdefined he_data
 	end
 end
 
-# ╔═╡ 75fba930-9adf-4c39-a2b9-2a9c0b3ddc08
-begin
-	if he_data.name != "empty"
-	if parsed && fit_model
-	if !(isnothing(sol))
-	ψ = getfield(Hyperelastics, Symbol(model))()
-	pred = predict(ψ, he_data, sol)
-	if typeof(he_data) == HyperelasticUniaxialTest
-		UniaxialPlot(
-			[he_data, pred],
-			["Experimental", split(string(typeof(ψ)), ".")[2]],
-			modes = ["markers", "lines"]
-		)
-	elseif typeof(he_data) == HyperelasticBiaxialTest
-		BiaxialPlot(
-			[he_data, pred], 
-			["Experimental 1", split(string(typeof(ψ)), ".")[2]* " 1"] ,
-			["Experimental 2", split(string(typeof(ψ)), ".")[2]* " 2"] ,
-			modes = ["markers", "lines"]
-		)
-	end
-	end
-	end
-	end
-end
-
 # ╔═╡ 1345476c-ee08-4233-8506-0ebc94a2bec5
 # ╠═╡ disabled = true
+# ╠═╡ skip_as_script = true
 #=╠═╡
 let
 if @isdefined he_data
@@ -961,14 +862,113 @@ if !isnothing(he_data) && fit_model && @isdefined sol
 end
 end
 
+# ╔═╡ d413c71f-7551-47d8-aea1-8af3a8769ca0
+function UniaxialPlot(he_data, names; modes = ["markers"])
+	p = Plot()
+	layout = Config(
+		template = PlotlyLight.template("simple_white"),
+		grid = Config(rows = 1, columns = 1, pattern = "independent")
+	)	
+	for (i,data) in enumerate(he_data)
+		p(
+			x = getindex.(data.data.λ, 1),
+			y = getindex.(data.data.s, 1),
+			name = names[i],
+			type = "scatter",
+			mode = modes[i],
+		)	
+	end
+	p.layout = layout
+	p.layout.xaxis.title = "Stretch [-]"
+	p.layout.yaxis.title = "Stress"
+	p
+end;
+
+# ╔═╡ f44d3d0b-2023-4f5d-a8b6-a8c57bf2ee64
+function BiaxialPlot(he_data, names1, names2; modes = ["markers"])
+	layout = Config(
+		template = PlotlyLight.template("simple_white"),
+		grid = Config(rows = 1, columns = 2, pattern = "independent")
+	)
+	p = Plot()
+	for (i,data) in enumerate(he_data)
+		p(
+			x = getindex.(data.data.λ, 1),
+			y = getindex.(data.data.s, 1),
+			name = names1[i],
+			type = "scatter",
+			mode = modes[i],
+		)(
+			x = getindex.(data.data.λ, 1),
+			y = getindex.(data.data.s, 2),
+			name = names2[i],
+			type = "scatter",
+			mode = modes[i],
+		)(
+			x = getindex.(data.data.λ, 2),
+			y = getindex.(data.data.s, 1),
+			xaxis = "x2",
+			yaxis = "y2",
+			name = names1[i],
+			type = "scatter",
+			mode = modes[i],
+		)(
+			x = getindex.(data.data.λ, 2),
+			y = getindex.(data.data.s, 2),
+			xaxis = "x2",
+			yaxis = "y2",
+			name = names2[i],
+			type = "scatter",
+			mode = modes[i],
+		)
+	end
+		p.layout = layout
+		p.layout.xaxis.title = "λ₁ Stretch [-]"
+		p.layout.yaxis.title = "Stress"
+		p.layout.xaxis2.title = "λ₂ Stretch [-]"
+		p.layout.yaxis2.title = "Stress"
+		p
+end;
+
+# ╔═╡ 0ff26acb-a790-48b7-ab8d-6889c0e409ac
+if typeof(he_data) == HyperelasticUniaxialTest
+	UniaxialPlot([he_data],["Experimental"])
+elseif typeof(he_data) == HyperelasticBiaxialTest
+	BiaxialPlot([he_data], ["Experimental - 1"], ["Experimental - 2"])
+end
+
+# ╔═╡ 75fba930-9adf-4c39-a2b9-2a9c0b3ddc08
+begin
+	if he_data.name != "empty"
+	if parsed && fit_model
+	if !(isnothing(sol))
+	ψ = getfield(Hyperelastics, Symbol(model))()
+	pred = predict(ψ, he_data, sol)
+	if typeof(he_data) == HyperelasticUniaxialTest
+		UniaxialPlot(
+			[he_data, pred],
+			["Experimental", split(string(typeof(ψ)), ".")[2]],
+			modes = ["markers", "lines"]
+		)
+	elseif typeof(he_data) == HyperelasticBiaxialTest
+		BiaxialPlot(
+			[he_data, pred], 
+			["Experimental 1", split(string(typeof(ψ)), ".")[2]* " 1"] ,
+			["Experimental 2", split(string(typeof(ψ)), ".")[2]* " 2"] ,
+			modes = ["markers", "lines"]
+		)
+	end
+	end
+	end
+	end
+end
+
 # ╔═╡ Cell order:
 # ╟─0dd8b7de-570d-41a7-b83d-d1bbe39c017e
 # ╟─73ab5774-dc3c-4759-92c4-7f7917c18cbf
 # ╟─692b1d0d-2353-4931-b289-490f74988811
 # ╟─69068002-ca3a-4e19-9562-6736d3b15dea
 # ╟─f12538a9-f595-4fae-b76c-078179bc5109
-# ╟─d413c71f-7551-47d8-aea1-8af3a8769ca0
-# ╟─f44d3d0b-2023-4f5d-a8b6-a8c57bf2ee64
 # ╟─0ff26acb-a790-48b7-ab8d-6889c0e409ac
 # ╟─2607b1b6-9c9c-482f-b38b-35e83a57f5d3
 # ╟─d0319d95-f335-48fa-b789-59daf9a0f1a4
@@ -1002,3 +1002,5 @@ end
 # ╟─8ea07dab-06dc-456d-9769-5e9c3980a777
 # ╟─bcf0c08c-cc7a-4785-a87b-2be47633eb85
 # ╟─c91bc6e2-d046-47fe-8e90-b000fcbf3b8a
+# ╟─d413c71f-7551-47d8-aea1-8af3a8769ca0
+# ╟─f44d3d0b-2023-4f5d-a8b6-a8c57bf2ee64
